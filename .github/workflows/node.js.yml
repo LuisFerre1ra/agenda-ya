@@ -1,0 +1,36 @@
+name: CI Pipeline - AgendaYA
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  quality-and-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v3
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: npm ci
+
+    - name: Comprobación de tipos (TypeScript)
+      run: npx tsc --noEmit
+
+    - name: Análisis de código estático (ESLint)
+      run: npm run lint
+
+    - name: Ejecutar pruebas unitarias con Cobertura
+      run: npm test -- --coverage
+
+    - name: Construir proyecto (Build)
+      run: npm run build
