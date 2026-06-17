@@ -109,10 +109,41 @@ describe('Módulo 03 - Tipos de Evento', () => {
     });
   });
 
-  describe('Visualización y Filtros', () => {
-    test('Filtrar eventos por coincidencia de nombre', () => { /* TODO */ });
-    test('Ordenar eventos por duración (asc/desc)', () => { /* TODO */ });
-    test('Filtrar eventos correctamente por modalidad', () => { /* TODO */ });
+describe('Visualización y Filtros', () => {
+  const mockEvents: EventType[] = [
+    { id: '1', name: 'Consulta Inicial', duration: 30, modality: 'Virtual', confirmation: 'Automática' },
+    { id: '2', name: 'Consulta Nutricional', duration: 45, modality: 'Presencial', confirmation: 'Manual' },
+    { id: '3', name: 'Reunión de Seguimiento', duration: 60, modality: 'Virtual', confirmation: 'Manual' },
+    { id: '4', name: 'Clase de Yoga', duration: 90, modality: 'Presencial', confirmation: 'Automática' }
+  ];
+
+  test('Filtrar eventos por coincidencia de nombre', () => {
+    const result = EventService.filterEventTypesByName(mockEvents, 'consulta');
+
+    expect(result).toHaveLength(2);
+    expect(result.map(event => event.name)).toEqual([
+      'Consulta Inicial',
+      'Consulta Nutricional'
+    ]);
   });
 
+  test('Ordenar eventos por duración (asc/desc)', () => {
+    const ascendingResult = EventService.sortEventTypesByDuration(mockEvents, 'asc');
+    const descendingResult = EventService.sortEventTypesByDuration(mockEvents, 'desc');
+
+    expect(ascendingResult.map(event => event.duration)).toEqual([30, 45, 60, 90]);
+    expect(descendingResult.map(event => event.duration)).toEqual([90, 60, 45, 30]);
+  });
+
+  test('Filtrar eventos correctamente por modalidad', () => {
+    const result = EventService.filterEventTypesByModality(mockEvents, 'Virtual');
+
+    expect(result).toHaveLength(2);
+    expect(result.every(event => event.modality === 'Virtual')).toBe(true);
+    expect(result.map(event => event.name)).toEqual([
+      'Consulta Inicial',
+      'Reunión de Seguimiento'
+    ]);
+  });
+});
 });
