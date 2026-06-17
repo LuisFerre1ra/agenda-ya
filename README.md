@@ -32,7 +32,7 @@ Para levantar el proyecto y ejecutar las pruebas, sigue estos pasos:
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone [https://github.com/LuisFerre1ra/agenda-ya](https://github.com/LuisFerre1ra/agenda-ya)
+   git clone https://github.com/LuisFerre1ra/agenda-ya.git
    cd agenda-ya
    ```
 
@@ -57,7 +57,8 @@ Para garantizar la calidad del software, contamos con un pipeline configurado en
 
 A continuación se detalla el esquema del flujo automatizado:
 
-%%{init: {'flowchart': {'curve': 'step'}}}%%
+```mermaid
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
 flowchart TD
     A[Gatillo: Push o Pull Request a 'main'] -->|Inicia el Job| B(Runner: ubuntu-latest)
     
@@ -69,9 +70,13 @@ flowchart TD
         F --> G[5. Linter 'eslint']
         G --> H{6. Pruebas Unitarias 'npm test'}
         
-        H -->|Falla| ERROR[Bloquea el Merge / Cruz Roja]
+        H -->|Falla| ERROR[Bloquea el Merge]
         H -->|Pasa| I{7. Build 'npm run build'}
         
         I -->|Falla| ERROR
-        I -->|Pasa| SUCCESS[Permite el Merge / Check Verde]
+        I -->|Pasa| SUCCESS[Permite el Merge]
+
+        style ERROR fill:#ffcccc,stroke:#cc0000,stroke-width:2px,color:#900
+        style SUCCESS fill:#ccffcc,stroke:#009900,stroke-width:2px,color:#060
     end
+```
