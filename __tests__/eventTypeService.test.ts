@@ -11,9 +11,43 @@ describe('Módulo 03 - Tipos de Evento', () => {
   });
 
   describe('Edición de tipos de evento', () => {
-    test('Actualizar correctamente los atributos modificados', () => { /* TODO */ });
-    test('Rechazar actualización si se vacía el nombre', () => { /* TODO */ });
-    test('Mantener datos originales al cancelar edición', () => { /* TODO */ });
+    const mockEvents: EventType[] = [
+      { id: '1', name: 'Consulta Inicial', duration: 30, modality: 'Virtual', confirmation: 'Automática' },
+      { id: '2', name: 'Reunión de Seguimiento', duration: 60, modality: 'Presencial', confirmation: 'Manual' }
+    ];
+
+    beforeEach(() => {
+      DB.resetEventsStore(mockEvents);
+    });
+
+    test('Actualizar correctamente los atributos modificados', () => {
+      const result = EventService.updateEventType('1', { duration: 45, confirmation: 'Manual' });
+      expect(result.success).toBe(true);
+      expect(result.event?.duration).toBe(45);
+      expect(result.event?.confirmation).toBe('Manual');
+      
+      const eventInDb = DB.eventsStore.find(e => e.id === '1');
+      expect(eventInDb?.duration).toBe(45);
+    });
+
+    test('Rechazar actualización si se vacía el nombre', () => {
+      const result = EventService.updateEventType('2', { name: '   ' });
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("El nombre no puede estar vacío.");
+      
+      const eventInDb = DB.eventsStore.find(e => e.id === '2');
+      expect(eventInDb?.name).toBe('Reunión de Seguimiento'); // el nombre no cambió
+    });
+
+    test('Mantener datos originales al cancelar edición', () => {
+      const originalEvent = { ...DB.eventsStore.find(e => e.id === '1')! };
+      
+      const result = EventService.updateEventType('1', {});
+      expect(result.success).toBe(true);
+      
+      const currentEvent = DB.eventsStore.find(e => e.id === '1');
+      expect(currentEvent).toEqual(originalEvent);
+    });
   });
 
   describe('Eliminación de tipos de evento', () => {
