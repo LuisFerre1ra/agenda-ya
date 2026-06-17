@@ -2,6 +2,11 @@ import { Booking } from '@/types/Booking';
 import { EventType } from '@/types/EventType';
 import { GuestData } from '@/types/GuestData';
 
+export type BookingSummary = {
+  event: EventType;
+  booking: Booking;
+};
+
 export function getAvailableSlots(date: Date, allSlots: string[], occupiedSlots: string[]): string[] {
   throw new Error("Not implemented");
 }
@@ -31,12 +36,18 @@ export function validateGuestData(data: GuestData): { isValid: boolean; errors: 
   return { isValid: errors.length === 0, errors };
 }
 
-export function generateBookingSummary(event: EventType, date: string, time: string, guest: GuestData): any {
-  return {
-    event: { ...event },
+export function generateBookingSummary(event: EventType, date: string, time: string, guest: GuestData): BookingSummary {
+  const booking: Booking = {
+    eventId: event.id,
     date,
     time,
-    guest: { ...guest },
+    guest,
+    status: 'Pendiente',
+  };
+
+  return {
+    event: { ...event },
+    booking,
   };
 }
 
