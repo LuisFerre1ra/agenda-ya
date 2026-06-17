@@ -8,7 +8,17 @@ export type BookingSummary = {
 };
 
 export function getAvailableSlots(date: Date, allSlots: string[], occupiedSlots: string[]): string[] {
-  throw new Error("Not implemented");
+  if (!date || !Array.isArray(allSlots)) return [];
+
+  // Compare only the date part (ignore time) to determine if it's in the past
+  const given = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const today = new Date();
+  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  if (given < todayOnly) return [];
+
+  const occupiedSet = new Set(occupiedSlots || []);
+  return allSlots.filter((slot) => !occupiedSet.has(slot));
 }
 
 export function validateGuestData(data: GuestData): { isValid: boolean; errors: string[] } {
