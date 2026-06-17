@@ -54,13 +54,27 @@ export function restoreEventType(): { success: boolean; event?: EventType; error
 }
 
 export function filterEventTypesByName(events: EventType[], query: string): EventType[] {
-  throw new Error("Not implemented");
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (normalizedQuery === '') {
+    return events;
+  }
+
+  return events.filter(event =>
+    event.name.toLowerCase().includes(normalizedQuery)
+  );
 }
 
-export function filterEventTypesByModality(events: EventType[], modality: string): EventType[] {
-  throw new Error("Not implemented");
+export function filterEventTypesByModality(events: EventType[], modality: EventType['modality']): EventType[] {
+  return events.filter(event => event.modality === modality);
 }
 
 export function sortEventTypesByDuration(events: EventType[], order: 'asc' | 'desc'): EventType[] {
-  throw new Error("Not implemented");
+  return [...events].sort((a, b) => {
+    if (order === 'asc') {
+      return a.duration - b.duration;
+    }
+
+    return b.duration - a.duration;
+  });
 }
