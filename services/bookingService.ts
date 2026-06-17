@@ -10,7 +10,7 @@ export function validateGuestData(data: GuestData): { isValid: boolean; errors: 
   throw new Error("Not implemented");
 }
 
-export function generateBookingSummary(event: EventType, date: string, time: string, guest: GuestData): any {
+export function generateBookingSummary(event: EventType, date: string, time: string, guest: GuestData): Partial<Booking> {
   throw new Error("Not implemented");
 }
 
