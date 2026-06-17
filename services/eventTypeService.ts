@@ -6,7 +6,21 @@ export function createEventType(data: Omit<EventType, 'id'>): { success: boolean
 }
 
 export function updateEventType(id: string, data: Partial<EventType>): { success: boolean; event?: EventType; error?: string } {
-  throw new Error("Not implemented");
+  const index = eventsStore.findIndex(event => event.id === id);
+  if (index === -1) {
+    return { success: false, error: "El ID ingresado no existe." };
+  }
+
+  if (data.name !== undefined) {
+    if (data.name.trim() === '') {
+      return { success: false, error: "El nombre no puede estar vacío." };
+    }
+  }
+
+  const updatedEvent = { ...eventsStore[index], ...data };
+  eventsStore[index] = updatedEvent;
+
+  return { success: true, event: updatedEvent };
 }
 
 export function deleteEventType(id: string): { success: boolean; error?: string } {
