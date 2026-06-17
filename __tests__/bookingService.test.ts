@@ -3,9 +3,38 @@ import * as BookingService from '@/services/bookingService';
 describe('Módulo 04 - Proceso de Reserva', () => {
 
   describe('Selección de fecha y hora', () => {
-    test('Devolver lista correcta de horarios disponibles', () => { /* TODO */ });
-    test('Impedir selección de fechas en el pasado', () => { /* TODO */ });
-    test('Excluir horarios ya ocupados de la disponibilidad', () => { /* TODO */ });
+    test('Devolver lista correcta de horarios disponibles', () => {
+      const allSlots = ['09:00', '09:30', '10:00', '10:30'];
+      const occupied = ['09:30', '10:30'];
+      const today = new Date();
+
+      const available = BookingService.getAvailableSlots(today, allSlots, occupied);
+
+      expect(available).toEqual(['09:00', '10:00']);
+    });
+
+    test('Impedir selección de fechas en el pasado', () => {
+      const allSlots = ['09:00', '09:30', '10:00'];
+      const occupied: string[] = [];
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      const available = BookingService.getAvailableSlots(yesterday, allSlots, occupied);
+
+      // For dates in the past, no slots should be returned
+      expect(available).toEqual([]);
+    });
+
+    test('Excluir horarios ya ocupados de la disponibilidad', () => {
+      const allSlots = ['08:00', '08:30', '09:00'];
+      const occupied = ['08:30'];
+      const someDate = new Date();
+
+      const available = BookingService.getAvailableSlots(someDate, allSlots, occupied);
+
+      // occupied slots must not appear in the available list
+      expect(available).not.toContain('08:30');
+      expect(available).toEqual(['08:00', '09:00']);
+    });
   });
 
   describe('Ingreso de datos del invitado', () => {
