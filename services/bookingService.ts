@@ -61,11 +61,14 @@ export function generateBookingSummary(event: EventType, date: string, time: str
   };
 }
 
-export function confirmBooking(requestedSlot: string, availableSlots: string[]): { success: boolean; message?: string; error?: string } {
-  if (!availableSlots.includes(requestedSlot)) {
-    return { success: false, error: 'Requested slot not available' };
+export function confirmBooking(booking: Booking, availableSlots: string[]): { success: boolean; booking?: Booking; error?: string } {
+  if (!availableSlots.includes(booking.time)) {
+    return { success: false, error: 'Slot is no longer available'};
   }
-  return { success: true, message: 'Booking confirmed' };
+  const index = availableSlots.indexOf(booking.time);
+  availableSlots.splice(index, 1);
+  return {success: true, booking: {...booking, status: 'Confirmada'}
+  };
 }
 
 // Helper to process guest form: validates and returns processed guest object if valid

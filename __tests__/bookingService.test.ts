@@ -72,9 +72,32 @@ describe('Módulo 04 - Proceso de Reserva', () => {
   });
 
   describe('Confirmación de la reserva', () => {
-    test('Generar resumen exacto con datos de cita e invitado', () => { /* TODO */ });
-    test('Cambiar estado del horario a ocupado tras confirmación', () => { /* TODO */ });
-    test('Arrojar error de concurrencia si el turno ya fue ocupado', () => { /* TODO */ });
-  });
+    test('Generar resumen exacto con datos de cita e invitado', () => {
+      const event = {id: '1', name: 'Consulta', duration: 60, modality: 'Presencial', confirmation: 'Automática'} as const;
+      const guest = { name: 'Juan Perez', email: 'juan@example.com'};
+      const result = BookingService.generateBookingSummary( event,'2026-06-20','09:00', guest);
+      expect(result.booking).toEqual({ eventId: '1', date: '2026-06-20', time: '09:00', guest, status: 'Pendiente'});
+    });
+
+    test('Cambiar estado del horario a ocupado tras confirmación', () => {
+      const availableSlots = ['09:00', '10:00'];
+      const booking = {eventId: '1', date: '2026-06-20', time: '09:00', guest: { name: 'Juan Perez', email: 'juan@example.com'}, status: 'Pendiente'} as const;
+      const result = BookingService.confirmBooking(booking, availableSlots);
+      expect(result.success).toBe(true);
+      expect(result.booking?.status).toBe('Confirmada');
+      expect(availableSlots).not.toContain('09:00');
+      expect(availableSlots).toEqual(['10:00']);
+    });
+
+
+    test('Arrojar error de concurrencia si el turno ya fue ocupado', () => {
+      const availableSlots = ['10:00'];
+      const booking = {eventId: '1', date: '2026-06-20',time: '09:00', guest: {name: 'Juan Perez', email: 'juan@example.com'}, status: 'Pendiente'} as const;
+      const result = BookingService.confirmBooking(booking, availableSlots);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Slot is no longer available');
+    });
+
+});
 
 });
