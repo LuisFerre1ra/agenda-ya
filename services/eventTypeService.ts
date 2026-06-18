@@ -2,7 +2,22 @@ import { EventType } from '@/types/EventType';
 import { eventsStore, lastDeletedEvent, setLastDeletedEvent } from '@/database/mockDb';
 
 export function createEventType(data: Omit<EventType, 'id'>): { success: boolean; event?: EventType; error?: string } {
-  throw new Error("Not implemented");
+  if (!data.name || data.name.trim() === '') {
+    return { success: false, error: "El nombre no puede estar vacío." };
+  }
+
+  if (data.duration <= 0) {
+    return { success: false, error: "La duración debe ser mayor a 0." };
+  }
+
+  const newEvent: EventType = {
+    id: Date.now().toString(),
+    ...data
+  };
+
+  eventsStore.push(newEvent);
+
+  return { success: true, event: newEvent };
 }
 
 export function updateEventType(id: string, data: Partial<EventType>): { success: boolean; event?: EventType; error?: string } {

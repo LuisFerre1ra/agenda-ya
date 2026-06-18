@@ -5,9 +5,59 @@ import { EventType } from '@/types/EventType';
 describe('Módulo 03 - Tipos de Evento', () => {
 
   describe('Creación de tipos de evento', () => {
-    test('Validar retorno exitoso al enviar campos obligatorios', () => { /* TODO */ });
-    test('Rechazar creación si el nombre está vacío', () => { /* TODO */ });
-    test('Rechazar duraciones ilógicas (0 o negativas)', () => { /* TODO */ });
+    beforeEach(() => {
+      // Limpiar la db antes de testear creación para no tener basura
+      DB.resetEventsStore([]);
+    });
+
+    test('Validar retorno exitoso al enviar campos obligatorios', () => {
+      const data = {
+        name: 'Consulta Nueva',
+        duration: 30,
+        modality: 'Virtual' as const,
+        confirmation: 'Automática' as const
+      };
+      
+      const result = EventService.createEventType(data);
+      
+      expect(result.success).toBe(true);
+      expect(result.event).toBeDefined();
+      expect(result.event?.name).toBe('Consulta Nueva');
+      expect(result.event?.id).toBeDefined();
+      
+      expect(DB.eventsStore.length).toBe(1);
+      expect(DB.eventsStore[0].name).toBe('Consulta Nueva');
+    });
+
+    test('Rechazar creación si el nombre está vacío', () => {
+      const data = {
+        name: '   ',
+        duration: 30,
+        modality: 'Presencial' as const,
+        confirmation: 'Manual' as const
+      };
+      
+      const result = EventService.createEventType(data);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('El nombre no puede estar vacío.');
+      expect(DB.eventsStore.length).toBe(0);
+    });
+
+    test('Rechazar duraciones ilógicas (0 o negativas)', () => {
+      const data = {
+        name: 'Consulta Rápida',
+        duration: -10,
+        modality: 'Virtual' as const,
+        confirmation: 'Automática' as const
+      };
+      
+      const result = EventService.createEventType(data);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('La duración debe ser mayor a 0.');
+      expect(DB.eventsStore.length).toBe(0);
+    });
   });
 
   describe('Edición de tipos de evento', () => {
