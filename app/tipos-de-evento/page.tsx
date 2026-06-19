@@ -25,6 +25,32 @@ export default function TiposDeEventoPage() {
     setToastFade(false);
   };
 
+  const formatDuration = (duration: number | string) => {
+    if (typeof duration === 'number') {
+      if (duration % 60 === 0) {
+        const hours = duration / 60;
+        return `${hours}${hours === 1 ? 'h' : 'hs'}`;
+      }
+      return `${duration} ${duration === 1 ? 'min' : 'mins'}`;
+    }
+
+    const normalized = duration.trim().toLowerCase();
+
+    const hourMatch = normalized.match(/^(\d+)\s*(h|hs|hora|horas)$/);
+    if (hourMatch) {
+      const value = Number(hourMatch[1]);
+      return `${value}${value === 1 ? 'h' : 'hs'}`;
+    }
+
+    const minuteMatch = normalized.match(/^(\d+)\s*(min|mins|minuto|minutos)$/);
+    if (minuteMatch) {
+      const value = Number(minuteMatch[1]);
+      return `${value} ${value === 1 ? 'min' : 'mins'}`;
+    }
+
+    return duration;
+  };
+
   useEffect(() => {
     if (!showToast) return;
     const fadeTimer = window.setTimeout(() => setToastFade(true), 2500);
@@ -100,7 +126,7 @@ export default function TiposDeEventoPage() {
                 eventos.map((evento: any) => (
                   <tr key={evento.id} className="hover:bg-gray-50">
                     <td className="border py-3 px-4 border-gray-300">{evento.name}</td>
-                    <td className="border py-3 px-4 border-gray-300">{evento.duration}</td>
+                    <td className="border py-3 px-4 border-gray-300">{formatDuration(evento.duration)}</td>
                     <td className="border py-3 px-4 border-gray-300">{evento.modality}</td>
                     <td className="border py-3 px-4 border-gray-300 max-w-[260px]">
                       <div className="truncate whitespace-nowrap overflow-hidden">{evento.description}</div>
