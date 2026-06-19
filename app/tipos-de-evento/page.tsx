@@ -1,15 +1,34 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
-import { Search, Filter, ArrowDownAZ, Pencil, Trash2 } from 'lucide-react';
+import { Search, Filter, ArrowDownAZ, Pencil, Trash2, Check } from 'lucide-react';
 
-// Importamos la base de datos simulada
+// Importamos la base de datos simulada y el modal
 import { eventsStore } from '@/database/mockDb';
+import CreateEventTypeModal from '@/components/CreateEventTypeModal';
 
 export default function TiposDeEventoPage() {
-  const eventos = eventsStore;
+  // Estado local para los tipos de evento de la tabla
+  const [eventos, setEventos] = useState(eventsStore);
+  
+  // Estado para controlar la visibilidad del modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  // Función que el modal llamará cuando se guarde el tipo de evento con éxito
+  const handleSaveEvent = (newEvent: any) => {
+    setEventos([...eventos, newEvent]);
+    setIsModalOpen(false);
+    setShowToast(true);
+  };
+
+  useEffect(() => {
+    if (!showToast) return;
+    const timeout = window.setTimeout(() => setShowToast(false), 3000);
+    return () => window.clearTimeout(timeout);
+  }, [showToast]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -23,7 +42,11 @@ export default function TiposDeEventoPage() {
           
           {/* Barra de herramientas */}
           <div className="flex items-center justify-between mb-4">
-            <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm font-medium rounded flex items-center gap-2 transition-colors cursor-pointer">
+            <button 
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm font-medium rounded flex items-center gap-2 transition-colors cursor-pointer"
+            >
               <span>+</span> Nuevo Tipo de Evento
             </button>
             
@@ -36,16 +59,16 @@ export default function TiposDeEventoPage() {
                   className="border border-gray-300 rounded pl-9 pr-3 py-2 text-sm w-64 focus:outline-none focus:border-blue-500 placeholder-gray-300 text-gray-500 cursor-text"
                 />
               </div>
-              <button className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
+              <button type="button" className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
                 <Filter size={18} />
               </button>
-              <button className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
+              <button type="button" className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
                 <ArrowDownAZ size={18} />
               </button>
             </div>
           </div>
 
-          {/* Tabla de Eventos */}
+          {/* Tabla de Tipos de Eventos */}
           <table className="w-full border-collapse border border-gray-300 text-sm">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
@@ -66,9 +89,8 @@ export default function TiposDeEventoPage() {
                   </td>
                 </tr>
               ) : (
-                eventos.map((evento) => (
+                eventos.map((evento: any) => (
                   <tr key={evento.id} className="hover:bg-gray-50">
-                    {/* ATENCIÓN: Asegúrate de que las propiedades (ej. evento.name) coincidan con tu interface EventType */}
                     <td className="border py-3 px-4 border-gray-300">{evento.name}</td>
                     <td className="border py-3 px-4 border-gray-300">{evento.duration}</td>
                     <td className="border py-3 px-4 border-gray-300">{evento.modality}</td>
@@ -76,10 +98,10 @@ export default function TiposDeEventoPage() {
                     <td className="border py-3 px-4 border-gray-300">{evento.confirmation}</td>
                     <td className="border py-2 px-2 border-gray-300">
                       <div className="flex justify-center gap-2">
-                        <button className="p-1.5 border border-blue-200 text-blue-500 rounded hover:bg-blue-50 cursor-pointer">
+                        <button type="button" className="p-1.5 border border-blue-200 text-blue-500 rounded hover:bg-blue-50 cursor-pointer">
                           <Pencil size={16} />
                         </button>
-                        <button className="p-1.5 border border-red-200 text-red-500 rounded hover:bg-red-50 cursor-pointer">
+                        <button type="button" className="p-1.5 border border-red-200 text-red-500 rounded hover:bg-red-50 cursor-pointer">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -91,6 +113,20 @@ export default function TiposDeEventoPage() {
           </table>
         </main>
       </div>
+
+      {/* RENDERIZADO DEL MODAL */}
+      <CreateEventTypeModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSave={handleSaveEvent}
+      />
+
+      {showToast && (
+        <div className="fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 bg-[#b5e58b] text-[#1c4d1c] px-6 py-3 rounded-md shadow-lg">
+          <Check size={20} className="stroke-[3]" />
+          <span className="font-semibold text-lg">Tipo de evento creado con éxito</span>
+        </div>
+      )}
     </div>
   );
 }
