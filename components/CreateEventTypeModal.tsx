@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { X, Check } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 
 interface CreateEventTypeModalProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
 
   // Estados de UI
   const [isTouched, setIsTouched] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Validación: El nombre no puede estar vacío
   const isNameEmpty = name.trim() === '';
@@ -35,6 +36,7 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
       setConfirmation('Automática');
       setDescription('');
       setIsTouched(false);
+      setIsSaving(false);
     }
   }, [isOpen]);
 
@@ -45,12 +47,13 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
     setIsTouched(true);
 
     if (isFormValid) {
+      setIsSaving(true);
       // Formatear duración según la unidad
       const formattedDuration = durationUnit === 'horas' 
         ? `${duration} ${Number(duration) === 1 ? 'hora' : 'horas'}` 
         : `${duration} min`;
 
-      // Simular guardado
+      // Simular guardado con feedback en el botón
       const newEvent = {
         id: Date.now().toString(),
         name,
@@ -60,11 +63,11 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
         description,
       };
 
-      // Esperar 2 segundos, guardar en la tabla padre y cerrar
-      setTimeout(() => {
+      window.setTimeout(() => {
         onSave(newEvent);
+        setIsSaving(false);
         onClose();
-      }, 2000);
+      }, 600);
     }
   };
 
@@ -209,14 +212,21 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
             <div className="flex justify-end">
               <button 
                 type="submit"
-                disabled={isTouched && !isFormValid}
+                disabled={(isTouched && !isFormValid) || isSaving}
                 className={`px-6 py-2 rounded text-white font-medium transition-colors ${
-                  isTouched && !isFormValid 
+                  (isTouched && !isFormValid) || isSaving
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
                 }`}
               >
-                Guardar Cambios
+                {isSaving ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Guardando...
+                  </span>
+                ) : (
+                  'Guardar Cambios'
+                )}
               </button>
             </div>
           </form>

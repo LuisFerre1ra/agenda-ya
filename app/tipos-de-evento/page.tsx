@@ -16,18 +16,26 @@ export default function TiposDeEventoPage() {
   // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastFade, setToastFade] = useState(false);
 
   // Función que el modal llamará cuando se guarde el tipo de evento con éxito
   const handleSaveEvent = (newEvent: any) => {
     setEventos([...eventos, newEvent]);
-    setIsModalOpen(false);
     setShowToast(true);
+    setToastFade(false);
   };
 
   useEffect(() => {
     if (!showToast) return;
-    const timeout = window.setTimeout(() => setShowToast(false), 3000);
-    return () => window.clearTimeout(timeout);
+    const fadeTimer = window.setTimeout(() => setToastFade(true), 2500);
+    const hideTimer = window.setTimeout(() => {
+      setShowToast(false);
+      setToastFade(false);
+    }, 3000);
+    return () => {
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(hideTimer);
+    };
   }, [showToast]);
 
   return (
@@ -124,9 +132,14 @@ export default function TiposDeEventoPage() {
       />
 
       {showToast && (
-        <div className="fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 bg-[#b5e58b] text-[#1c4d1c] px-6 py-3 rounded-md shadow-lg">
+        <div
+          className={`fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center gap-3 rounded-md px-6 py-3 shadow-lg transition-opacity duration-500 ${toastFade ? 'opacity-0' : 'opacity-100'}`}
+          style={{ backgroundColor: '#d1fae5', color: '#0f5132' }}
+        >
           <Check size={20} className="stroke-[3]" />
-          <span className="font-semibold text-lg">Tipo de evento creado con éxito</span>
+          <div>
+            <p className="font-semibold text-base mb-0">Tipo de evento creado con éxito</p>
+          </div>
         </div>
       )}
     </div>
