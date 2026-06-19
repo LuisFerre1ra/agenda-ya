@@ -94,7 +94,9 @@ export default function TiposDeEventoPage() {
                     <td className="border py-3 px-4 border-gray-300">{evento.name}</td>
                     <td className="border py-3 px-4 border-gray-300">{evento.duration}</td>
                     <td className="border py-3 px-4 border-gray-300">{evento.modality}</td>
-                    <td className="border py-3 px-4 border-gray-300">{evento.description}</td>
+                    <td className="border py-3 px-4 border-gray-300 max-w-[260px]">
+                      <div className="truncate whitespace-nowrap overflow-hidden">{evento.description}</div>
+                    </td>
                     <td className="border py-3 px-4 border-gray-300">{evento.confirmation}</td>
                     <td className="border py-2 px-2 border-gray-300">
                       <div className="flex justify-center gap-2">
