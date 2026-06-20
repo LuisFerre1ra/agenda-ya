@@ -1,6 +1,10 @@
 import { EventType } from '@/types/EventType';
 import { eventsStore, lastDeletedEvent, setLastDeletedEvent } from '@/database/mockDb';
 
+export function getEventTypes(): EventType[] {
+  return [...eventsStore];
+}
+
 export function createEventType(data: Omit<EventType, 'id'>): { success: boolean; event?: EventType; error?: string } {
   if (!data.name || data.name.trim() === '') {
     return { success: false, error: "El nombre no puede estar vacío." };

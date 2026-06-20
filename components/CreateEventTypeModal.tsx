@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { EventType } from '@/types/EventType';
 
 interface CreateEventTypeModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onSave: (newEvent: any) => void;
+  onClose: (saved?: boolean) => void;
+  onSave: (newEvent: Omit<EventType, 'id'>) => { success: boolean; event?: EventType; error?: string };
 }
 
 export default function CreateEventTypeModal({ isOpen, onClose, onSave }: CreateEventTypeModalProps) {
@@ -14,31 +15,20 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
   const [name, setName] = useState('');
   const [duration, setDuration] = useState('30');
   const [durationUnit, setDurationUnit] = useState('minutos');
-  const [modality, setModality] = useState('Virtual');
-  const [confirmation, setConfirmation] = useState('Automática');
+  const [modality, setModality] = useState<EventType['modality']>('Virtual');
+  const [confirmation, setConfirmation] = useState<EventType['confirmation']>('Automática');
   const [description, setDescription] = useState('');
 
   // Estados de UI
   const [isTouched, setIsTouched] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // Validación: El nombre no puede estar vacío
+  // Validación: El nombre no puede estar vacío y la duración debe ser válida
+  const durationValue = Number(duration);
   const isNameEmpty = name.trim() === '';
-  const isFormValid = !isNameEmpty;
-
-  // Resetea el formulario cuando se abre el modal
-  useEffect(() => {
-    if (isOpen) {
-      setName('');
-      setDuration('30');
-      setDurationUnit('minutos');
-      setModality('Virtual');
-      setConfirmation('Automática');
-      setDescription('');
-      setIsTouched(false);
-      setIsSaving(false);
-    }
-  }, [isOpen]);
+  const isDurationInvalid = Number.isNaN(durationValue) || durationValue <= 0;
+  const isFormValid = !isNameEmpty && !isDurationInvalid;
 
   if (!isOpen) return null;
 
@@ -48,25 +38,26 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
 
     if (isFormValid) {
       setIsSaving(true);
-      // Formatear duración según la unidad
-      const formattedDuration = durationUnit === 'horas' 
-        ? `${duration} ${Number(duration) === 1 ? 'hora' : 'horas'}` 
-        : `${duration} min`;
+      setErrorMessage('');
 
-      // Simular guardado con feedback en el botón
-      const newEvent = {
-        id: Date.now().toString(),
-        name,
-        duration: formattedDuration,
+      const newEventData: Omit<EventType, 'id'> = {
+        name: name.trim(),
+        duration: durationUnit === 'horas' ? durationValue * 60 : durationValue,
         modality,
         confirmation,
-        description,
+        description: description.trim() || undefined,
       };
 
+      const result = onSave(newEventData);
+
       window.setTimeout(() => {
-        onSave(newEvent);
-        setIsSaving(false);
-        onClose();
+        if (result.success) {
+          setIsSaving(false);
+          onClose(true);
+        } else {
+          setIsSaving(false);
+          setErrorMessage(result.error ?? 'No se pudo guardar el tipo de evento.');
+        }
       }, 600);
     }
   };
@@ -81,7 +72,7 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
           {/* Botón Cerrar (X) */}
           <button 
             type="button"
-            onClick={onClose}
+            onClick={() => onClose(false)}
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer p-1"
           >
             <X size={24} />
@@ -147,7 +138,7 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
                       name="modality" 
                       value="Presencial"
                       checked={modality === 'Presencial'}
-                      onChange={(e) => setModality(e.target.value)}
+                      onChange={(e) => setModality(e.target.value as EventType['modality'])}
                       className="w-4 h-4 text-blue-500"
                     />
                     Presencial
@@ -158,7 +149,7 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
                       name="modality" 
                       value="Virtual"
                       checked={modality === 'Virtual'}
-                      onChange={(e) => setModality(e.target.value)}
+                      onChange={(e) => setModality(e.target.value as EventType['modality'])}
                       className="w-4 h-4 text-blue-500"
                     />
                     Virtual
@@ -176,7 +167,7 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
                       name="confirmation" 
                       value="Automática"
                       checked={confirmation === 'Automática'}
-                      onChange={(e) => setConfirmation(e.target.value)}
+                      onChange={(e) => setConfirmation(e.target.value as EventType['confirmation'])}
                       className="w-4 h-4 text-blue-500"
                     />
                     Automática
@@ -187,7 +178,7 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
                       name="confirmation" 
                       value="Manual"
                       checked={confirmation === 'Manual'}
-                      onChange={(e) => setConfirmation(e.target.value)}
+                      onChange={(e) => setConfirmation(e.target.value as EventType['confirmation'])}
                       className="w-4 h-4 text-blue-500"
                     />
                     Manual
@@ -207,6 +198,12 @@ export default function CreateEventTypeModal({ isOpen, onClose, onSave }: Create
                 className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 resize-none focus:outline-none focus:border-blue-500"
               />
             </div>
+
+            {errorMessage && (
+              <div className="rounded bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            )}
 
             {/* Botón de Submit */}
             <div className="flex justify-end">

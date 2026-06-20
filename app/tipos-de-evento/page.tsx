@@ -5,24 +5,38 @@ import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import { Search, Filter, ArrowDownAZ, Pencil, Trash2, Check } from 'lucide-react';
 
-// Importamos la base de datos simulada y el modal
-import { eventsStore } from '@/database/mockDb';
+import { EventType } from '@/types/EventType';
+import { createEventType, getEventTypes } from '@/services/eventTypeService';
 import CreateEventTypeModal from '@/components/CreateEventTypeModal';
 
 export default function TiposDeEventoPage() {
   // Estado local para los tipos de evento de la tabla
-  const [eventos, setEventos] = useState(eventsStore);
+  const [eventos, setEventos] = useState<EventType[]>(() => getEventTypes());
   
   // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastFade, setToastFade] = useState(false);
 
+  const handleModalClose = (saved = false) => {
+    setIsModalOpen(false);
+
+    if (saved) {
+      setShowToast(true);
+      setToastFade(false);
+    }
+  };
+
   // Función que el modal llamará cuando se guarde el tipo de evento con éxito
-  const handleSaveEvent = (newEvent: any) => {
-    setEventos([...eventos, newEvent]);
-    setShowToast(true);
-    setToastFade(false);
+  const handleSaveEvent = (newEventData: Omit<EventType, 'id'>) => {
+    const result = createEventType(newEventData);
+
+    if (!result.success) {
+      return result;
+    }
+
+    setEventos(prev => [...prev, result.event!]);
+    return result;
   };
 
   const formatDuration = (duration: number | string) => {
@@ -123,7 +137,7 @@ export default function TiposDeEventoPage() {
                   </td>
                 </tr>
               ) : (
-                eventos.map((evento: any) => (
+                eventos.map((evento: EventType) => (
                   <tr key={evento.id} className="hover:bg-gray-50">
                     <td className="border py-3 px-4 border-gray-300">{evento.name}</td>
                     <td className="border py-3 px-4 border-gray-300">{formatDuration(evento.duration)}</td>
@@ -152,8 +166,9 @@ export default function TiposDeEventoPage() {
 
       {/* RENDERIZADO DEL MODAL */}
       <CreateEventTypeModal 
+        key={isModalOpen ? 'open' : 'closed'}
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={handleModalClose} 
         onSave={handleSaveEvent}
       />
 
