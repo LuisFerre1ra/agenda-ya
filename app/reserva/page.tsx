@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { User } from 'lucide-react';
+import { User, ChevronLeft } from 'lucide-react';
 import Step1EventSelection from '@/components/reserva/Step1EventSelection';
-// Aquí importaremos los Step 2, 3 y 4 después
+import Step2DateSelection from '@/components/reserva/Step2DateSelection';
+import { eventsStore } from '@/database/mockDb';
 
 export default function ReservaPage() {
   // Estado global del flujo de reserva
@@ -22,6 +23,17 @@ export default function ReservaPage() {
     setCurrentStep(2); // Avanzamos al paso 2
   };
 
+  const handleStep2Next = (date: string, time: string) => {
+    setReservaData({ ...reservaData, date, time });
+    setCurrentStep(3); // Avanzamos al paso 3 (Próximo a crear)
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   // Calcula el ancho de la barra de progreso
   const progressWidth = `${(currentStep / 4) * 100}%`;
 
@@ -30,8 +42,17 @@ export default function ReservaPage() {
       {/* Contenedor del celular */}
       <div className="w-full max-w-md bg-white sm:rounded-[2.5rem] shadow-2xl relative flex flex-col min-h-screen sm:min-h-[800px] overflow-hidden">
         
-        {/* Cabecera superior */}
-        <div className="bg-[#e2e8f0] h-24 w-full relative"></div>
+        {/* Cabecera superior con botón de volver */}
+        <div className="bg-[#e2e8f0] h-24 w-full relative">
+          {currentStep > 1 && (
+            <button 
+              onClick={handleBack}
+              className="absolute top-6 left-6 text-slate-500 hover:text-slate-700 cursor-pointer p-1"
+            >
+              <ChevronLeft size={32} strokeWidth={3} />
+            </button>
+          )}
+        </div>
 
         {/* Avatar flotante */}
         <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-[#cbd5e1] text-gray-500 rounded-full w-16 h-16 flex items-center justify-center border-[6px] border-white z-10">
@@ -58,7 +79,12 @@ export default function ReservaPage() {
           {/* Renderizado dinámico de los pasos */}
           <div className="flex-1 flex flex-col h-full">
             {currentStep === 1 && <Step1EventSelection onNext={handleStep1Next} />}
-            {currentStep === 2 && <div className="text-center py-10">Aquí irá el Paso 2 (Calendario)</div>}
+            {currentStep === 2 && (
+              <Step2DateSelection 
+                eventDuration={eventsStore.find(e => e.id === reservaData.eventId)?.duration || 30}
+                onNext={handleStep2Next} 
+              />
+            )}
             {/* {currentStep === 3 && <Step3GuestData />} */}
             {/* {currentStep === 4 && <Step4Confirmation />} */}
           </div>
