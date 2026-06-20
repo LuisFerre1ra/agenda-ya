@@ -5,6 +5,7 @@ import { User, ChevronLeft } from 'lucide-react';
 import Step1EventSelection from '@/components/reserva/Step1EventSelection';
 import Step2DateSelection from '@/components/reserva/Step2DateSelection';
 import Step3GuestData from '@/components/reserva/Step3GuestData';
+import Step4Confirmation from '@/components/reserva/Step4Confirmation';
 import { eventsStore } from '@/database/mockDb';
 
 export default function ReservaPage() {
@@ -34,6 +35,10 @@ export default function ReservaPage() {
   const handleStep3Next = (guestData: { guestName: string; guestEmail: string; guestPhone: string; guestNotes: string }) => {
     setReservaData({ ...reservaData, ...guestData });
     setCurrentStep(4); // Avanzamos al paso final
+  };
+
+  const handleFinalConfirm = () => {
+    
   };
 
   const handleBack = () => {
@@ -94,7 +99,7 @@ export default function ReservaPage() {
               />
             )}
             {currentStep === 3 && <Step3GuestData onNext={handleStep3Next} />}
-            {/* {currentStep === 4 && <Step4Confirmation />} */}
+            {currentStep === 4 && <Step4Confirmation reservaData={reservaData} onConfirm={handleFinalConfirm} />}
           </div>
 
         </main>
