@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { User, ChevronLeft } from 'lucide-react';
 import Step1EventSelection from '@/components/reserva/Step1EventSelection';
 import Step2DateSelection from '@/components/reserva/Step2DateSelection';
+import Step3GuestData from '@/components/reserva/Step3GuestData';
 import { eventsStore } from '@/database/mockDb';
 
 export default function ReservaPage() {
@@ -14,7 +15,9 @@ export default function ReservaPage() {
     date: '',
     time: '',
     guestName: '',
-    guestEmail: ''
+    guestEmail: '',
+    guestPhone: '',
+    guestNotes: ''
   });
 
   // Función para avanzar desde el Paso 1
@@ -26,6 +29,11 @@ export default function ReservaPage() {
   const handleStep2Next = (date: string, time: string) => {
     setReservaData({ ...reservaData, date, time });
     setCurrentStep(3); // Avanzamos al paso 3 (Próximo a crear)
+  };
+
+  const handleStep3Next = (guestData: { guestName: string; guestEmail: string; guestPhone: string; guestNotes: string }) => {
+    setReservaData({ ...reservaData, ...guestData });
+    setCurrentStep(4); // Avanzamos al paso final
   };
 
   const handleBack = () => {
@@ -85,7 +93,7 @@ export default function ReservaPage() {
                 onNext={handleStep2Next} 
               />
             )}
-            {/* {currentStep === 3 && <Step3GuestData />} */}
+            {currentStep === 3 && <Step3GuestData onNext={handleStep3Next} />}
             {/* {currentStep === 4 && <Step4Confirmation />} */}
           </div>
 
