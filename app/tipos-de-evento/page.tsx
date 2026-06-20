@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
-import { Search, Filter, ArrowDownAZ, Pencil, Trash2, Check } from 'lucide-react';
+import { Search, Filter, ArrowDownAZ, Pencil, Trash2, Check, X } from 'lucide-react';
 
 import { EventType } from '@/types/EventType';
 import { createEventType, getEventTypes } from '@/services/eventTypeService';
@@ -12,7 +12,10 @@ import CreateEventTypeModal from '@/components/CreateEventTypeModal';
 export default function TiposDeEventoPage() {
   // Estado local para los tipos de evento de la tabla
   const [eventos, setEventos] = useState<EventType[]>(() => getEventTypes());
-  
+
+  // Estado para el query de búsqueda
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -78,6 +81,16 @@ export default function TiposDeEventoPage() {
     };
   }, [showToast]);
 
+  const filteredEventos = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return eventos;
+    return eventos.filter((evento) => {
+      return (
+        evento.name.toLowerCase().includes(q)
+      );
+    });
+  }, [eventos, searchQuery]);
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
@@ -104,8 +117,20 @@ export default function TiposDeEventoPage() {
                 <input 
                   type="text" 
                   placeholder="Buscar por nombre..." 
-                  className="border border-gray-300 rounded pl-9 pr-3 py-2 text-sm w-64 focus:outline-none focus:border-blue-500 placeholder-gray-300 text-gray-500 cursor-text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border border-gray-300 rounded pl-9 pr-8 py-2 text-sm w-64 focus:outline-none focus:border-blue-500 placeholder-gray-300 text-gray-500"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
               <button type="button" className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
                 <Filter size={18} />
@@ -129,15 +154,21 @@ export default function TiposDeEventoPage() {
               </tr>
             </thead>
             <tbody className="text-gray-600">
-              {/* Renderizado condicional por si el mockDb está vacío */}
+              {/* Renderizado condicional por si el mockDb está vacío o no hay resultados de búsqueda */}
               {eventos.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="border py-8 text-center text-gray-400">
                     No hay tipos de eventos registrados.
                   </td>
                 </tr>
+              ) : filteredEventos.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="border py-8 text-center text-gray-400">
+                    No hay tipos de eventos que coincidan con la búsqueda.
+                  </td>
+                </tr>
               ) : (
-                eventos.map((evento: EventType) => (
+                filteredEventos.map((evento: EventType) => (
                   <tr key={evento.id} className="hover:bg-gray-50">
                     <td className="border py-3 px-4 border-gray-300">{evento.name}</td>
                     <td className="border py-3 px-4 border-gray-300">{formatDuration(evento.duration)}</td>
