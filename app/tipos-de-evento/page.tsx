@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
-import { Search, Filter, ArrowDownAZ, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Search, Filter, ArrowDownAZ, ArrowUpAZ, ClockArrowUp, ClockArrowDown, Pencil, Trash2, Check, X } from 'lucide-react';
 
 import { EventType } from '@/types/EventType';
 import { createEventType, getEventTypes } from '@/services/eventTypeService';
@@ -15,6 +15,8 @@ export default function TiposDeEventoPage() {
 
   // Estado para el query de búsqueda
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'duration'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,6 +42,33 @@ export default function TiposDeEventoPage() {
 
     setEventos(prev => [...prev, result.event!]);
     return result;
+  };
+
+  const handleSortToggle = () => {
+    if (sortBy === 'name') {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else {
+        setSortBy('duration');
+        setSortDirection('asc');
+      }
+      return;
+    }
+
+    if (sortDirection === 'asc') {
+      setSortDirection('desc');
+    } else {
+      setSortBy('name');
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = () => {
+    if (sortBy === 'name') {
+      return sortDirection === 'asc' ? <ArrowUpAZ size={18} /> : <ArrowDownAZ size={18} />;
+    }
+
+    return sortDirection === 'asc' ? <ClockArrowUp size={18} /> : <ClockArrowDown size={18} />;
   };
 
   const formatDuration = (duration: number | string) => {
@@ -91,6 +120,21 @@ export default function TiposDeEventoPage() {
     });
   }, [eventos, searchQuery]);
 
+  const sortedEventos = useMemo(() => {
+    const eventsToSort = [...filteredEventos];
+
+    if (sortBy === 'name') {
+      return eventsToSort.sort((a, b) => {
+        const comparison = a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+        return sortDirection === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    return eventsToSort.sort((a, b) => {
+      return sortDirection === 'asc' ? a.duration - b.duration : b.duration - a.duration;
+    });
+  }, [filteredEventos, sortBy, sortDirection]);
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
@@ -135,8 +179,13 @@ export default function TiposDeEventoPage() {
               <button type="button" className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
                 <Filter size={18} />
               </button>
-              <button type="button" className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
-                <ArrowDownAZ size={18} />
+              <button
+                type="button"
+                onClick={handleSortToggle}
+                className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer"
+                aria-label="Cambiar orden de la lista"
+              >
+                {getSortIcon()}
               </button>
             </div>
           </div>
@@ -161,14 +210,14 @@ export default function TiposDeEventoPage() {
                     No hay tipos de eventos registrados.
                   </td>
                 </tr>
-              ) : filteredEventos.length === 0 ? (
+              ) : sortedEventos.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="border py-8 text-center text-gray-400">
                     No hay tipos de eventos que coincidan con la búsqueda.
                   </td>
                 </tr>
               ) : (
-                filteredEventos.map((evento: EventType) => (
+                sortedEventos.map((evento: EventType) => (
                   <tr key={evento.id} className="hover:bg-gray-50">
                     <td className="border py-3 px-4 border-gray-300">{evento.name}</td>
                     <td className="border py-3 px-4 border-gray-300">{formatDuration(evento.duration)}</td>
