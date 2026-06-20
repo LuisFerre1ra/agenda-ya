@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import { Search, Filter, ArrowDownAZ, ArrowUpAZ, ClockArrowUp, ClockArrowDown, Pencil, Trash2, Check, X } from 'lucide-react';
 
 import { EventType } from '@/types/EventType';
-import { createEventType, getEventTypes } from '@/services/eventTypeService';
+import { createEventType, getEventTypes, updateEventType } from '@/services/eventTypeService';
 import CreateEventTypeModal from '@/components/CreateEventTypeModal';
 
 export default function TiposDeEventoPage() {
@@ -31,9 +31,12 @@ export default function TiposDeEventoPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastFade, setToastFade] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [eventToEdit, setEventToEdit] = useState<EventType | null>(null);
 
   const handleModalClose = (saved = false) => {
     setIsModalOpen(false);
+    setEventToEdit(null);
 
     if (saved) {
       setShowToast(true);
@@ -41,8 +44,30 @@ export default function TiposDeEventoPage() {
     }
   };
 
+  const handleCreateEventType = () => {
+    setEventToEdit(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditEventType = (evento: EventType) => {
+    setEventToEdit(evento);
+    setIsModalOpen(true);
+  };
+
   // Función que el modal llamará cuando se guarde el tipo de evento con éxito
   const handleSaveEvent = (newEventData: Omit<EventType, 'id'>) => {
+    if (eventToEdit) {
+      const result = updateEventType(eventToEdit.id, newEventData);
+
+      if (!result.success) {
+        return result;
+      }
+
+      setEventos(prev => prev.map(evento => (evento.id === eventToEdit.id ? result.event! : evento)));
+      setToastMessage('Cambios guardados con éxito');
+      return result;
+    }
+
     const result = createEventType(newEventData);
 
     if (!result.success) {
@@ -50,6 +75,7 @@ export default function TiposDeEventoPage() {
     }
 
     setEventos(prev => [...prev, result.event!]);
+    setToastMessage('Tipo de evento creado con éxito');
     return result;
   };
 
@@ -215,7 +241,7 @@ export default function TiposDeEventoPage() {
           <div className="flex items-center justify-between mb-4">
             <button 
               type="button"
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleCreateEventType}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm font-medium rounded flex items-center gap-2 transition-colors cursor-pointer"
             >
               <span>+</span> Nuevo Tipo de Evento
@@ -371,7 +397,7 @@ export default function TiposDeEventoPage() {
                     <td className="border py-3 px-4 border-gray-300">{evento.confirmation}</td>
                     <td className="border py-2 px-2 border-gray-300">
                       <div className="flex justify-center gap-2">
-                        <button type="button" className="p-1.5 border border-blue-200 text-blue-500 rounded hover:bg-blue-50 cursor-pointer">
+                        <button type="button" onClick={() => handleEditEventType(evento)} className="p-1.5 border border-blue-200 text-blue-500 rounded hover:bg-blue-50 cursor-pointer">
                           <Pencil size={16} />
                         </button>
                         <button type="button" className="p-1.5 border border-red-200 text-red-500 rounded hover:bg-red-50 cursor-pointer">
@@ -389,8 +415,9 @@ export default function TiposDeEventoPage() {
 
       {/* RENDERIZADO DEL MODAL */}
       <CreateEventTypeModal 
-        key={isModalOpen ? 'open' : 'closed'}
+        key={isModalOpen ? eventToEdit?.id ?? 'new' : 'closed'}
         isOpen={isModalOpen} 
+        eventToEdit={eventToEdit}
         onClose={handleModalClose} 
         onSave={handleSaveEvent}
       />
@@ -402,7 +429,7 @@ export default function TiposDeEventoPage() {
         >
           <Check size={20} className="stroke-[3]" />
           <div>
-            <p className="font-semibold text-base mb-0">Tipo de evento creado con éxito</p>
+            <p className="font-semibold text-base mb-0">{toastMessage}</p>
           </div>
         </div>
       )}

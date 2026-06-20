@@ -6,18 +6,29 @@ import { EventType } from '@/types/EventType';
 
 interface CreateEventTypeModalProps {
   isOpen: boolean;
+  eventToEdit?: EventType | null;
   onClose: (saved?: boolean) => void;
   onSave: (newEvent: Omit<EventType, 'id'>) => { success: boolean; event?: EventType; error?: string };
 }
 
-export default function CreateEventTypeModal({ isOpen, onClose, onSave }: CreateEventTypeModalProps) {
+const getInitialDuration = (event?: EventType | null) => {
+  if (!event) return '30';
+  return event.duration % 60 === 0 ? String(event.duration / 60) : String(event.duration);
+};
+
+const getInitialDurationUnit = (event?: EventType | null) => {
+  if (!event) return 'minutos';
+  return event.duration % 60 === 0 ? 'horas' : 'minutos';
+};
+
+export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClose, onSave }: CreateEventTypeModalProps) {
   // Estados del formulario
-  const [name, setName] = useState('');
-  const [duration, setDuration] = useState('30');
-  const [durationUnit, setDurationUnit] = useState('minutos');
-  const [modality, setModality] = useState<EventType['modality']>('Virtual');
-  const [confirmation, setConfirmation] = useState<EventType['confirmation']>('Automática');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState(eventToEdit?.name ?? '');
+  const [duration, setDuration] = useState(() => getInitialDuration(eventToEdit));
+  const [durationUnit, setDurationUnit] = useState(() => getInitialDurationUnit(eventToEdit));
+  const [modality, setModality] = useState<EventType['modality']>(eventToEdit?.modality ?? 'Virtual');
+  const [confirmation, setConfirmation] = useState<EventType['confirmation']>(eventToEdit?.confirmation ?? 'Automática');
+  const [description, setDescription] = useState(eventToEdit?.description ?? '');
 
   // Estados de UI
   const [isTouched, setIsTouched] = useState(false);
