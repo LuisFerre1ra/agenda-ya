@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Clock } from 'lucide-react';
 import { EventType } from '@/types/EventType';
 import { getEventTypes } from '@/services/eventTypeService';
@@ -10,7 +10,7 @@ interface Step1Props {
 }
 
 export default function Step1EventSelection({ onNext }: Step1Props) {
-  const [eventos, setEventos] = useState<EventType[]>(() => getEventTypes());
+  const [eventos] = useState<EventType[]>(() => getEventTypes());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const formatDuration = (duration: number | string) => {
