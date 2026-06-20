@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import { Search, Filter, ArrowDownAZ, ArrowUpAZ, ClockArrowUp, ClockArrowDown, Pencil, Trash2, Check, X } from 'lucide-react';
@@ -17,6 +17,13 @@ export default function TiposDeEventoPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'duration'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [minDuration, setMinDuration] = useState('');
+  const [maxDuration, setMaxDuration] = useState('');
+  const [modalityFilter, setModalityFilter] = useState<EventType['modality'] | ''>('');
+  const [confirmationFilter, setConfirmationFilter] = useState<EventType['confirmation'] | ''>('');
+  const filterRef = useRef<HTMLDivElement | null>(null);
 
   // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -110,15 +117,41 @@ export default function TiposDeEventoPage() {
     };
   }, [showToast]);
 
+  useEffect(() => {
+    if (!isFilterOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!filterRef.current) return;
+      if (event.target instanceof Node && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => window.removeEventListener('mousedown', handleClickOutside);
+  }, [isFilterOpen]);
+
   const filteredEventos = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return eventos;
+    const minValue = Number(minDuration);
+    const maxValue = Number(maxDuration);
+
     return eventos.filter((evento) => {
+      const matchesSearch = evento.name.toLowerCase().includes(q);
+      const matchesMinDuration = minDuration === '' || evento.duration >= minValue;
+      const matchesMaxDuration = maxDuration === '' || evento.duration <= maxValue;
+      const matchesModality = modalityFilter === '' || evento.modality === modalityFilter;
+      const matchesConfirmation = confirmationFilter === '' || evento.confirmation === confirmationFilter;
+
       return (
-        evento.name.toLowerCase().includes(q)
+        matchesSearch &&
+        matchesMinDuration &&
+        matchesMaxDuration &&
+        matchesModality &&
+        matchesConfirmation
       );
     });
-  }, [eventos, searchQuery]);
+  }, [eventos, searchQuery, minDuration, maxDuration, modalityFilter, confirmationFilter]);
 
   const sortedEventos = useMemo(() => {
     const eventsToSort = [...filteredEventos];
@@ -163,7 +196,7 @@ export default function TiposDeEventoPage() {
                   placeholder="Buscar por nombre..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border border-gray-300 rounded pl-9 pr-8 py-2 text-sm w-64 focus:outline-none focus:border-blue-500 placeholder-gray-300 text-gray-500"
+                  className="border border-gray-300 rounded pl-9 pr-8 py-2 text-sm w-64 focus:outline-none focus:border-blue-500 placeholder-gray-400 text-gray-900"
                 />
                 {searchQuery && (
                   <button
@@ -176,9 +209,86 @@ export default function TiposDeEventoPage() {
                   </button>
                 )}
               </div>
-              <button type="button" className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer">
-                <Filter size={18} />
-              </button>
+              <div className="relative" ref={filterRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen((current) => !current)}
+                  className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer"
+                  aria-label="Mostrar filtros"
+                >
+                  <Filter size={18} />
+                </button>
+                {isFilterOpen && (
+                  <section className="absolute right-0 z-20 mt-2 w-[320px] rounded-lg border border-gray-200 bg-white p-4 shadow-lg">
+                    <div className="grid gap-3">
+                      <div className="grid gap-2">
+                        <label className="text-sm font-medium text-gray-700">Duración</label>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <div className="flex-1">Mín</div>
+                          <div className="w-8 text-center">&nbsp;</div>
+                          <div className="flex-1 text-right">Máx</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min={1}
+                            value={minDuration}
+                            onChange={(e) => setMinDuration(e.target.value)}
+                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500"
+                            placeholder="1"
+                          />
+                          <span className="text-gray-500 text-2xl leading-none self-center">-</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={maxDuration}
+                            onChange={(e) => setMaxDuration(e.target.value)}
+                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500"
+                            placeholder="999"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <label className="text-sm font-medium text-gray-700">Modalidad</label>
+                        <select
+                          value={modalityFilter}
+                          onChange={(e) => setModalityFilter(e.target.value as EventType['modality'] | '')}
+                          className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="">Todas</option>
+                          <option value="Virtual">Virtual</option>
+                          <option value="Presencial">Presencial</option>
+                          <option value="Híbrida">Híbrida</option>
+                        </select>
+                      </div>
+                      <div className="grid gap-2">
+                        <label className="text-sm font-medium text-gray-700">Método de confirmación</label>
+                        <select
+                          value={confirmationFilter}
+                          onChange={(e) => setConfirmationFilter(e.target.value as EventType['confirmation'] | '')}
+                          className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="">Todos</option>
+                          <option value="Automática">Automática</option>
+                          <option value="Manual">Manual</option>
+                        </select>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMinDuration('');
+                          setMaxDuration('');
+                          setModalityFilter('');
+                          setConfirmationFilter('');
+                        }}
+                        className="w-full rounded border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        Limpiar filtros
+                      </button>
+                    </div>
+                  </section>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={handleSortToggle}
