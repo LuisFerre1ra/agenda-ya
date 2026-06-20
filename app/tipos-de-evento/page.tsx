@@ -3,15 +3,17 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
-import { Search, Filter, ArrowDownAZ, ArrowUpAZ, ClockArrowUp, ClockArrowDown, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Search, Filter, ArrowDownAZ, ArrowUpAZ, ClockArrowUp, ClockArrowDown, Pencil, Trash2, Check, X, AlertTriangle } from 'lucide-react';
 
 import { EventType } from '@/types/EventType';
-import { createEventType, getEventTypes, updateEventType } from '@/services/eventTypeService';
+import { createEventType, deleteEventType, getEventTypes, restoreEventType, updateEventType } from '@/services/eventTypeService';
 import CreateEventTypeModal from '@/components/CreateEventTypeModal';
+import DeleteEventTypeModal from '@/components/DeleteEventTypeModal';
 
 export default function TiposDeEventoPage() {
   // Estado local para los tipos de evento de la tabla
   const [eventos, setEventos] = useState<EventType[]>(() => getEventTypes());
+  const [eventToDelete, setEventToDelete] = useState<EventType | null>(null);
 
   // Estado para el query de búsqueda
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,6 +34,8 @@ export default function TiposDeEventoPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastFade, setToastFade] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'warning' | 'error'>('success');
+  const [canUndo, setCanUndo] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<EventType | null>(null);
 
   const handleModalClose = (saved = false) => {
@@ -39,6 +43,7 @@ export default function TiposDeEventoPage() {
     setEventToEdit(null);
 
     if (saved) {
+      setToastType('success');
       setShowToast(true);
       setToastFade(false);
     }
@@ -54,6 +59,43 @@ export default function TiposDeEventoPage() {
     setIsModalOpen(true);
   };
 
+  const handleDeleteEventType = (evento: EventType) => {
+    setEventToDelete(evento);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!eventToDelete) return;
+
+    const result = deleteEventType(eventToDelete.id);
+    if (!result.success) {
+      setToastType('error');
+      setToastMessage(result.error ?? 'No se pudo eliminar el tipo de evento.');
+      setShowToast(true);
+      setToastFade(false);
+      setEventToDelete(null);
+      return;
+    }
+
+    setEventos(prev => prev.filter(evento => evento.id !== eventToDelete.id));
+    setToastType('warning');
+    setToastMessage('Tipo de evento eliminado.');
+    setCanUndo(true);
+    setShowToast(true);
+    setToastFade(false);
+    setEventToDelete(null);
+  };
+
+  const handleUndoDelete = () => {
+    const result = restoreEventType();
+    if (result.success && result.event) {
+      setEventos(prev => [...prev, result.event!]);
+      setToastMessage('Eliminación deshecha.');
+      setToastType('success');
+      setCanUndo(false);
+      setToastFade(false);
+    }
+  };
+
   // Función que el modal llamará cuando se guarde el tipo de evento con éxito
   const handleSaveEvent = (newEventData: Omit<EventType, 'id'>) => {
     if (eventToEdit) {
@@ -64,6 +106,7 @@ export default function TiposDeEventoPage() {
       }
 
       setEventos(prev => prev.map(evento => (evento.id === eventToEdit.id ? result.event! : evento)));
+      setToastType('success');
       setToastMessage('Cambios guardados con éxito');
       return result;
     }
@@ -75,6 +118,7 @@ export default function TiposDeEventoPage() {
     }
 
     setEventos(prev => [...prev, result.event!]);
+    setToastType('success');
     setToastMessage('Tipo de evento creado con éxito');
     return result;
   };
@@ -134,11 +178,12 @@ export default function TiposDeEventoPage() {
 
   useEffect(() => {
     if (!showToast) return;
-    const fadeTimer = window.setTimeout(() => setToastFade(true), 2500);
+    const fadeTimer = window.setTimeout(() => setToastFade(true), 4500);
     const hideTimer = window.setTimeout(() => {
       setShowToast(false);
       setToastFade(false);
-    }, 3000);
+      setCanUndo(false);
+    }, 5000);
     return () => {
       window.clearTimeout(fadeTimer);
       window.clearTimeout(hideTimer);
@@ -400,7 +445,7 @@ export default function TiposDeEventoPage() {
                         <button type="button" onClick={() => handleEditEventType(evento)} className="p-1.5 border border-blue-200 text-blue-500 rounded hover:bg-blue-50 cursor-pointer">
                           <Pencil size={16} />
                         </button>
-                        <button type="button" className="p-1.5 border border-red-200 text-red-500 rounded hover:bg-red-50 cursor-pointer">
+                        <button type="button" onClick={() => handleDeleteEventType(evento)} className="p-1.5 border border-red-200 text-red-500 rounded hover:bg-red-50 cursor-pointer">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -422,15 +467,44 @@ export default function TiposDeEventoPage() {
         onSave={handleSaveEvent}
       />
 
+      <DeleteEventTypeModal
+        isOpen={Boolean(eventToDelete)}
+        eventName={eventToDelete?.name ?? ''}
+        onClose={() => setEventToDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
+
       {showToast && (
         <div
-          className={`fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center gap-3 rounded-md px-6 py-3 shadow-lg transition-opacity duration-500 ${toastFade ? 'opacity-0' : 'opacity-100'}`}
-          style={{ backgroundColor: '#d1fae5', color: '#0f5132' }}
+          className={`fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center justify-between gap-4 rounded-md px-6 py-3 shadow-lg transition-opacity duration-500 ${toastFade ? 'opacity-0' : 'opacity-100'}`}
+          style={{
+            backgroundColor:
+              toastType === 'success' ? '#d1fae5' : toastType === 'warning' ? '#fff4e5' : '#fdecea',
+            color:
+              toastType === 'success' ? '#0f5132' : toastType === 'warning' ? '#7a4d00' : '#842029'
+          }}
         >
-          <Check size={20} className="stroke-[3]" />
-          <div>
+          <div className="flex items-center gap-3">
+            {toastType === 'success' ? (
+              <Check size={20} className="stroke-[3]" />
+            ) : (
+              <AlertTriangle size={20} className="stroke-[3]" />
+            )}
             <p className="font-semibold text-base mb-0">{toastMessage}</p>
           </div>
+          {canUndo && (
+            <button
+              type="button"
+              onClick={handleUndoDelete}
+              className="px-3 py-1 text-sm font-medium rounded whitespace-nowrap cursor-pointer"
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                border: 'none'
+              }}
+            >
+              Deshacer
+            </button>
+          )}
         </div>
       )}
     </div>
