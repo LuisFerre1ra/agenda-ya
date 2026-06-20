@@ -23,6 +23,8 @@ export default function TiposDeEventoPage() {
   const [maxDuration, setMaxDuration] = useState('');
   const [modalityFilter, setModalityFilter] = useState<EventType['modality'] | ''>('');
   const [confirmationFilter, setConfirmationFilter] = useState<EventType['confirmation'] | ''>('');
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isSizeChecked, setIsSizeChecked] = useState(false);
   const filterRef = useRef<HTMLDivElement | null>(null);
 
   // Estado para controlar la visibilidad del modal
@@ -118,6 +120,20 @@ export default function TiposDeEventoPage() {
   }, [showToast]);
 
   useEffect(() => {
+    const updateDesktopState = () => {
+      const isDesktopSize = window.matchMedia('(min-width: 1024px)').matches;
+      setIsDesktop(isDesktopSize);
+      setIsSizeChecked(true);
+    };
+
+    updateDesktopState();
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    mediaQuery.addEventListener('change', updateDesktopState);
+
+    return () => mediaQuery.removeEventListener('change', updateDesktopState);
+  }, []);
+
+  useEffect(() => {
     if (!isFilterOpen) return;
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -167,6 +183,23 @@ export default function TiposDeEventoPage() {
       return sortDirection === 'asc' ? a.duration - b.duration : b.duration - a.duration;
     });
   }, [filteredEventos, sortBy, sortDirection]);
+
+  if (!isSizeChecked) {
+    return null;
+  }
+
+  if (!isDesktop) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white px-4 text-center">
+        <div className="max-w-md rounded-xl border border-gray-200 bg-slate-50 p-8 shadow-sm">
+          <h1 className="text-xl font-semibold text-gray-900">Acceso solo desde escritorio</h1>
+          <p className="mt-3 text-sm text-gray-600">
+            Esta página está diseñada exclusivamente para uso en un entorno de escritorio. Por favor, accede desde una pantalla más grande.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
