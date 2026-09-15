@@ -261,7 +261,7 @@ export default function TiposDeEventoPage() {
 
   if (!isDesktop) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4 text-center">
+      <div data-cy="desktop-only-warning" className="flex min-h-screen items-center justify-center bg-white px-4 text-center">
         <div className="max-w-md rounded-xl border border-gray-200 bg-slate-50 p-8 shadow-sm">
           <h1 className="text-xl font-semibold text-gray-900">Acceso solo desde escritorio</h1>
           <p className="mt-3 text-sm text-gray-600">
@@ -280,12 +280,13 @@ export default function TiposDeEventoPage() {
         <Sidebar />
         
         <main className="flex-1 p-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">Gestión de Tipos de Evento</h1>
+          <h1 data-cy="heading-page-title" className="text-2xl font-bold text-gray-800 mb-6">Gestión de Tipos de Evento</h1>
           
           {/* Barra de herramientas */}
           <div className="flex items-center justify-between mb-4">
             <button 
               type="button"
+              data-cy="btn-new-event-type"
               onClick={handleCreateEventType}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm font-medium rounded flex items-center gap-2 transition-colors cursor-pointer"
             >
@@ -297,6 +298,7 @@ export default function TiposDeEventoPage() {
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
                 <input 
                   type="text" 
+                  data-cy="input-search-name"
                   placeholder="Buscar por nombre..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -305,6 +307,7 @@ export default function TiposDeEventoPage() {
                 {searchQuery && (
                   <button
                     type="button"
+                    data-cy="btn-clear-search"
                     onClick={() => setSearchQuery('')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     aria-label="Clear search"
@@ -316,6 +319,7 @@ export default function TiposDeEventoPage() {
               <div className="relative" ref={filterRef}>
                 <button
                   type="button"
+                  data-cy="btn-filter-toggle"
                   onClick={() => setIsFilterOpen((current) => !current)}
                   className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer"
                   aria-label="Mostrar filtros"
@@ -323,7 +327,7 @@ export default function TiposDeEventoPage() {
                   <Filter size={18} />
                 </button>
                 {isFilterOpen && (
-                  <section className="absolute right-0 z-20 mt-2 w-[320px] rounded-lg border border-gray-200 bg-white p-4 shadow-lg">
+                  <section data-cy="panel-filters" className="absolute right-0 z-20 mt-2 w-[320px] rounded-lg border border-gray-200 bg-white p-4 shadow-lg">
                     <div className="grid gap-3">
                       <div className="grid gap-2">
                         <label className="text-sm font-medium text-gray-700">Duración</label>
@@ -335,6 +339,7 @@ export default function TiposDeEventoPage() {
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
+                            data-cy="input-filter-duration-min"
                             min={1}
                             value={minDuration}
                             onChange={(e) => setMinDuration(e.target.value)}
@@ -344,6 +349,7 @@ export default function TiposDeEventoPage() {
                           <span className="text-gray-500 text-2xl leading-none self-center">-</span>
                           <input
                             type="number"
+                            data-cy="input-filter-duration-max"
                             min={1}
                             value={maxDuration}
                             onChange={(e) => setMaxDuration(e.target.value)}
@@ -355,6 +361,7 @@ export default function TiposDeEventoPage() {
                       <div className="grid gap-2">
                         <label className="text-sm font-medium text-gray-700">Modalidad</label>
                         <select
+                          data-cy="select-filter-modality"
                           value={modalityFilter}
                           onChange={(e) => setModalityFilter(e.target.value as EventType['modality'] | '')}
                           className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500"
@@ -368,6 +375,7 @@ export default function TiposDeEventoPage() {
                       <div className="grid gap-2">
                         <label className="text-sm font-medium text-gray-700">Método de confirmación</label>
                         <select
+                          data-cy="select-filter-confirmation"
                           value={confirmationFilter}
                           onChange={(e) => setConfirmationFilter(e.target.value as EventType['confirmation'] | '')}
                           className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500"
@@ -379,6 +387,7 @@ export default function TiposDeEventoPage() {
                       </div>
                       <button
                         type="button"
+                        data-cy="btn-clear-filters"
                         onClick={() => {
                           setMinDuration('');
                           setMaxDuration('');
@@ -395,6 +404,7 @@ export default function TiposDeEventoPage() {
               </div>
               <button
                 type="button"
+                data-cy="btn-sort-toggle"
                 onClick={handleSortToggle}
                 className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors cursor-pointer"
                 aria-label="Cambiar orden de la lista"
@@ -405,7 +415,7 @@ export default function TiposDeEventoPage() {
           </div>
 
           {/* Tabla de Tipos de Eventos */}
-          <table className="w-full border-collapse border border-gray-300 text-sm">
+          <table data-cy="table-event-types" className="w-full border-collapse border border-gray-300 text-sm">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
                 <th className="border py-3 px-4 font-semibold text-left border-gray-300">Tipo de Evento</th>
@@ -420,32 +430,42 @@ export default function TiposDeEventoPage() {
               {/* Renderizado condicional por si el mockDb está vacío o no hay resultados de búsqueda */}
               {eventos.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="border py-8 text-center text-gray-400">
+                  <td data-cy="empty-state-message" colSpan={6} className="border py-8 text-center text-gray-400">
                     No hay tipos de eventos registrados.
                   </td>
                 </tr>
               ) : sortedEventos.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="border py-8 text-center text-gray-400">
+                  <td data-cy="empty-state-message" colSpan={6} className="border py-8 text-center text-gray-400">
                     No hay tipos de eventos que coincidan con la búsqueda.
                   </td>
                 </tr>
               ) : (
                 sortedEventos.map((evento: EventType) => (
-                  <tr key={evento.id} className="hover:bg-gray-50">
-                    <td className="border py-3 px-4 border-gray-300">{evento.name}</td>
-                    <td className="border py-3 px-4 border-gray-300">{formatDuration(evento.duration)}</td>
-                    <td className="border py-3 px-4 border-gray-300">{evento.modality}</td>
-                    <td className="border py-3 px-4 border-gray-300 max-w-[260px]">
-                      <div className="truncate whitespace-nowrap overflow-hidden">{evento.description}</div>
+                  <tr key={evento.id} data-cy="event-row" data-cy-event-id={evento.id} className="hover:bg-gray-50">
+                    <td data-cy="cell-event-name" className="border py-3 px-4 border-gray-300">{evento.name}</td>
+                    <td data-cy="cell-event-duration" className="border py-3 px-4 border-gray-300">{formatDuration(evento.duration)}</td>
+                    <td data-cy="cell-event-modality" className="border py-3 px-4 border-gray-300">{evento.modality}</td>
+                    <td data-cy="cell-event-description" className="border py-3 px-4 border-gray-300 max-w-[260px]">
+                      <div data-cy="text-event-description" className="truncate whitespace-nowrap overflow-hidden">{evento.description}</div>
                     </td>
-                    <td className="border py-3 px-4 border-gray-300">{evento.confirmation}</td>
+                    <td data-cy="cell-event-confirmation" className="border py-3 px-4 border-gray-300">{evento.confirmation}</td>
                     <td className="border py-2 px-2 border-gray-300">
                       <div className="flex justify-center gap-2">
-                        <button type="button" onClick={() => handleEditEventType(evento)} className="p-1.5 border border-blue-200 text-blue-500 rounded hover:bg-blue-50 cursor-pointer">
+                        <button 
+                          type="button" 
+                          data-cy="btn-edit-event"
+                          onClick={() => handleEditEventType(evento)} 
+                          className="p-1.5 border border-blue-200 text-blue-500 rounded hover:bg-blue-50 cursor-pointer"
+                        >
                           <Pencil size={16} />
                         </button>
-                        <button type="button" onClick={() => handleDeleteEventType(evento)} className="p-1.5 border border-red-200 text-red-500 rounded hover:bg-red-50 cursor-pointer">
+                        <button 
+                          type="button" 
+                          data-cy="btn-delete-event"
+                          onClick={() => handleDeleteEventType(evento)} 
+                          className="p-1.5 border border-red-200 text-red-500 rounded hover:bg-red-50 cursor-pointer"
+                        >
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -476,6 +496,7 @@ export default function TiposDeEventoPage() {
 
       {showToast && (
         <div
+          data-cy="toast-notification"
           className={`fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center justify-between gap-4 rounded-md px-6 py-3 shadow-lg transition-opacity duration-500 ${toastFade ? 'opacity-0' : 'opacity-100'}`}
           style={{
             backgroundColor:
@@ -490,11 +511,12 @@ export default function TiposDeEventoPage() {
             ) : (
               <AlertTriangle size={20} className="stroke-[3]" />
             )}
-            <p className="font-semibold text-base mb-0">{toastMessage}</p>
+            <p data-cy="toast-message" className="font-semibold text-base mb-0">{toastMessage}</p>
           </div>
           {canUndo && (
             <button
               type="button"
+              data-cy="btn-toast-undo"
               onClick={handleUndoDelete}
               className="px-3 py-1 text-sm font-medium rounded whitespace-nowrap cursor-pointer"
               style={{
