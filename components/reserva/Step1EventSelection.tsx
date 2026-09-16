@@ -23,14 +23,14 @@ export default function Step1EventSelection({ onNext }: Step1Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <h2 className="text-center text-slate-700 mb-6 font-medium">
+      <h2 data-cy="step1-title" className="text-center text-slate-700 mb-6 font-medium">
         Paso 1 de 4: Seleccionar Evento
       </h2>
 
       {/* Lista de Tarjetas de Eventos (Ocupa el espacio disponible) */}
-      <div className="space-y-4 overflow-y-auto flex-1 mb-6">
+      <div data-cy="event-selection-list" className="space-y-4 overflow-y-auto flex-1 mb-6">
         {eventos.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">Cargando eventos...</p>
+          <p data-cy="loading-events-message" className="text-center text-gray-500 py-4">Cargando eventos...</p>
         ) : (
           eventos.map((evento) => {
             const isSelected = selectedEventId === evento.id;
@@ -38,6 +38,8 @@ export default function Step1EventSelection({ onNext }: Step1Props) {
             return (
               <div 
                 key={evento.id}
+                data-cy="event-card"
+                data-cy-event-id={evento.id}
                 onClick={() => setSelectedEventId(evento.id)}
                 className={`border rounded-sm p-4 cursor-pointer transition-all ${
                   isSelected 
@@ -46,19 +48,19 @@ export default function Step1EventSelection({ onNext }: Step1Props) {
                 }`}
               >
                 <div className="flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
-                  <h3 className="font-bold text-slate-800 text-lg">
+                  <h3 data-cy="event-card-name" className="font-bold text-slate-800 text-lg">
                     {evento.name}
                   </h3>
-                  <div className="flex items-center text-slate-600 text-sm font-medium gap-1.5">
+                  <div data-cy="event-card-duration" className="flex items-center text-slate-600 text-sm font-medium gap-1.5">
                     <Clock size={16} className="text-slate-700" />
                     {formatDuration(evento.duration)}
                   </div>
                 </div>
                 <div className="text-sm">
-                  <p className="font-semibold text-slate-800 mb-1">
+                  <p data-cy="event-card-modality" className="font-semibold text-slate-800 mb-1">
                     Modalidad: {evento.modality}
                   </p>
-                  <p className="text-slate-600 line-clamp-2">
+                  <p data-cy="event-card-description" className="text-slate-600 line-clamp-2">
                     {evento.description || "Sin descripción disponible."}
                   </p>
                 </div>
@@ -70,6 +72,8 @@ export default function Step1EventSelection({ onNext }: Step1Props) {
 
       {/* Botón de continuar al final del paso */}
       <button 
+        type="button"
+        data-cy="btn-step1-continue"
         onClick={() => selectedEventId && onNext(selectedEventId)}
         disabled={!selectedEventId}
         className={`w-full py-3.5 rounded text-white font-medium text-lg transition-colors mt-auto ${

@@ -60,27 +60,27 @@ export default function Step4Confirmation({ reservaData, onConfirm }: Step4Props
 
   return (
     <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-      <h2 className="text-center text-slate-700 mb-6 font-medium">
+      <h2 data-cy="step4-title" className="text-center text-slate-700 mb-6 font-medium">
         Paso 4 de 4: Confirmar Reserva
       </h2>
 
       <div className="flex-1 overflow-y-auto mb-6 px-1">
         
         {/* Detalles de la Cita */}
-        <section className="mb-6">
+        <section data-cy="section-booking-details" className="mb-6">
           <h3 className="text-lg font-bold text-slate-800 mb-2">Detalles de la Cita</h3>
           <ul className="space-y-1 text-slate-700 text-[15px]">
             <li>
-              <span className="font-medium text-slate-800">Evento:</span> {eventDetails?.name || 'Cargando...'}
+              <span className="font-medium text-slate-800">Evento:</span> <span data-cy="summary-event-name">{eventDetails?.name || 'Cargando...'}</span>
             </li>
             <li>
-              <span className="font-medium text-slate-800">Fecha:</span> {formatDate(reservaData.date)}
+              <span className="font-medium text-slate-800">Fecha:</span> <span data-cy="summary-event-date">{formatDate(reservaData.date)}</span>
             </li>
             <li>
-              <span className="font-medium text-slate-800">Hora:</span> {reservaData.time}
+              <span className="font-medium text-slate-800">Hora:</span> <span data-cy="summary-event-time">{reservaData.time}</span>
             </li>
             <li>
-              <span className="font-medium text-slate-800">Modalidad:</span> {eventDetails?.modality || 'Cargando...'}
+              <span className="font-medium text-slate-800">Modalidad:</span> <span data-cy="summary-event-modality">{eventDetails?.modality || 'Cargando...'}</span>
             </li>
           </ul>
         </section>
@@ -88,20 +88,20 @@ export default function Step4Confirmation({ reservaData, onConfirm }: Step4Props
         <hr className="border-t border-gray-300 mb-6" />
 
         {/* Tus Datos */}
-        <section>
+        <section data-cy="section-guest-details">
           <h3 className="text-lg font-bold text-slate-800 mb-2">Tus Datos</h3>
           <ul className="space-y-1 text-slate-700 text-[15px]">
             <li>
-              <span className="font-medium text-slate-800">Nombre:</span> {reservaData.guestName}
+              <span className="font-medium text-slate-800">Nombre:</span> <span data-cy="summary-guest-name">{reservaData.guestName}</span>
             </li>
             <li>
-              <span className="font-medium text-slate-800">Correo:</span> {reservaData.guestEmail}
+              <span className="font-medium text-slate-800">Correo:</span> <span data-cy="summary-guest-email">{reservaData.guestEmail}</span>
             </li>
             <li>
-              <span className="font-medium text-slate-800">Teléfono:</span> {reservaData.guestPhone || '-'}
+              <span className="font-medium text-slate-800">Teléfono:</span> <span data-cy="summary-guest-phone">{reservaData.guestPhone || '-'}</span>
             </li>
             <li>
-              <span className="font-medium text-slate-800">Nota:</span> {reservaData.guestNotes || '-'}
+              <span className="font-medium text-slate-800">Nota:</span> <span data-cy="summary-guest-note">{reservaData.guestNotes || '-'}</span>
             </li>
           </ul>
         </section>
@@ -110,6 +110,8 @@ export default function Step4Confirmation({ reservaData, onConfirm }: Step4Props
       {/* Botón y texto de confirmación */}
       <div className="mt-auto pt-4">
         <button
+          type="button"
+          data-cy="btn-confirm-booking"
           onClick={handleConfirmClick}
           disabled={isSubmitting || !eventDetails}
           className={`w-full py-3.5 rounded text-white font-medium text-lg transition-colors flex justify-center items-center gap-2 ${
@@ -127,7 +129,7 @@ export default function Step4Confirmation({ reservaData, onConfirm }: Step4Props
             'Confirmar Reserva'
           )}
         </button>
-        <p className="text-center text-xs text-slate-500 mt-2">
+        <p data-cy="booking-confirmation-disclaimer" className="text-center text-xs text-slate-500 mt-2">
           Al confirmar, recibirás un email con los detalles de tu turno
         </p>
       </div>
