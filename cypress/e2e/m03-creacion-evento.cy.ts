@@ -19,15 +19,18 @@ describe('AgendaYA - Módulo 03: Tipos de Evento - Creación Exitosa de Evento',
     cy.get('[data-cy="textarea-event-description"]').type('Evaluación de competencias técnicas en vivo.');
     cy.get('[data-cy="btn-save-event"]').click();
 
-    // Assert: verificar toast de éxito y presencia del nuevo evento en la grilla
+    // Assert: verificar toast de éxito y presencia del nuevo evento con todos sus datos en la grilla
     cy.get('[data-cy="toast-notification"]')
       .should('be.visible')
       .and('contain.text', 'Tipo de evento creado con éxito');
 
-    cy.get('[data-cy="table-event-types"]').within(() => {
-      cy.contains('[data-cy="cell-event-name"]', 'Entrevista Técnica').should('be.visible');
-      cy.contains('[data-cy="cell-event-duration"]', '45 min').should('be.visible');
-      cy.contains('[data-cy="cell-event-modality"]', 'Virtual').should('be.visible');
+    // Localizar específicamente la fila del evento recién creado y verificar todas sus columnas
+    cy.contains('[data-cy="event-row"]', 'Entrevista Técnica').should('be.visible').within(() => {
+      cy.get('[data-cy="cell-event-name"]').should('contain.text', 'Entrevista Técnica');
+      cy.get('[data-cy="cell-event-duration"]').should('contain.text', '45 min');
+      cy.get('[data-cy="cell-event-modality"]').should('contain.text', 'Virtual');
+      cy.get('[data-cy="cell-event-description"]').should('contain.text', 'Evaluación de competencias técnicas en vivo.');
+      cy.get('[data-cy="cell-event-confirmation"]').should('contain.text', 'Automática');
     });
   });
 });
