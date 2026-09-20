@@ -58,6 +58,37 @@ describe('Módulo 03 - Tipos de Evento', () => {
       expect(result.error).toBe('La duración debe ser mayor a 0.');
       expect(DB.eventsStore.length).toBe(0);
     });
+
+    test('Crear evento con duración mínima admisible (1 minuto)', () => {
+      const data = {
+        name: 'Consulta Express',
+        duration: 1,
+        modality: 'Virtual' as const,
+        confirmation: 'Automática' as const
+      };
+
+      const result = EventService.createEventType(data);
+
+      expect(result.success).toBe(true);
+      expect(result.event).toBeDefined();
+      expect(result.event?.duration).toBe(1);
+      expect(DB.eventsStore[0].duration).toBe(1);
+    });
+
+    test('Rechazar creación si el nombre contiene solo tabulaciones y saltos de línea', () => {
+      const data = {
+        name: '\t \n  ',
+        duration: 30,
+        modality: 'Presencial' as const,
+        confirmation: 'Manual' as const
+      };
+
+      const result = EventService.createEventType(data);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('El nombre no puede estar vacío.');
+      expect(DB.eventsStore.length).toBe(0);
+    });
   });
 
   describe('Edición de tipos de evento', () => {
