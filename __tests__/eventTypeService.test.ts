@@ -205,6 +205,31 @@ describe('Módulo 03 - Tipos de Evento', () => {
       // Verificamos que no se haya borrado nada por accidente
       expect(DB.eventsStore.length).toBe(2);
     });
+
+    test('Manejar error al intentar restaurar cuando la papelera está vacía', () => {
+      // Aseguramos papelera limpia
+      DB.setLastDeletedEvent(null);
+
+      const restoreResult = EventService.restoreEventType();
+
+      expect(restoreResult.success).toBe(false);
+      expect(restoreResult.error).toBe('No hay eventos eliminados recientemente para deshacer.');
+    });
+
+    test('Rechazar una segunda llamada consecutiva a deshacer por papelera ya vaciada', () => {
+      // Eliminamos el evento '1'
+      EventService.deleteEventType('1');
+
+      // Primer deshacer: exitoso
+      const firstRestore = EventService.restoreEventType();
+      expect(firstRestore.success).toBe(true);
+      expect(firstRestore.event?.id).toBe('1');
+
+      // Segundo deshacer consecutivo: debe fallar
+      const secondRestore = EventService.restoreEventType();
+      expect(secondRestore.success).toBe(false);
+      expect(secondRestore.error).toBe('No hay eventos eliminados recientemente para deshacer.');
+    });
   });
 
 describe('Visualización y Filtros', () => {
