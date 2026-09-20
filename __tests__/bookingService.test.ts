@@ -35,6 +35,25 @@ describe('Módulo 04 - Proceso de Reserva', () => {
       expect(available).not.toContain('08:30');
       expect(available).toEqual(['08:00', '09:00']);
     });
+
+    test('Retornar array vacío de forma segura ante fecha o lista de slots inválidos o nulos', () => {
+      const nullDateResult = BookingService.getAvailableSlots(null as unknown as Date, ['09:00'], []);
+      const nullSlotsResult = BookingService.getAvailableSlots(new Date(), null as unknown as string[], []);
+
+      expect(nullDateResult).toEqual([]);
+      expect(nullSlotsResult).toEqual([]);
+    });
+
+    test('Retornar todos los horarios disponibles cuando no hay turnos ocupados', () => {
+      const allSlots = ['09:00', '10:00', '11:00'];
+      const occupied: string[] = [];
+      const today = new Date();
+
+      const available = BookingService.getAvailableSlots(today, allSlots, occupied);
+
+      expect(available).toHaveLength(3);
+      expect(available).toEqual(allSlots);
+    });
   });
 
   describe('Ingreso de datos del invitado', () => {
