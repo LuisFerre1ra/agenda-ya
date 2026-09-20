@@ -196,4 +196,61 @@ describe('Visualización y Filtros', () => {
     ]);
   });
 });
+
+  describe('Ordenamiento Algorítmico y Filtrado por Modalidad', () => {
+    const unsortedEvents: EventType[] = [
+      { id: '1', name: 'Sesión Larga', duration: 120, modality: 'Presencial', confirmation: 'Automática' },
+      { id: '2', name: 'Reunión Breve', duration: 15, modality: 'Virtual', confirmation: 'Manual' },
+      { id: '3', name: 'Taller Estándar', duration: 60, modality: 'Presencial', confirmation: 'Automática' },
+      { id: '4', name: 'Consulta Corta', duration: 30, modality: 'Virtual', confirmation: 'Manual' }
+    ];
+
+    test('Ordenar eventos en sentido ascendente estricto por duración', () => {
+      const result = EventService.sortEventTypesByDuration(unsortedEvents, 'asc');
+
+      expect(result.map(e => e.duration)).toEqual([15, 30, 60, 120]);
+    });
+
+    test('Preservar estabilidad ante eventos con duraciones idénticas', () => {
+      const duplicateDurationEvents: EventType[] = [
+        { id: '1', name: 'A', duration: 30, modality: 'Virtual', confirmation: 'Automática' },
+        { id: '2', name: 'B', duration: 60, modality: 'Presencial', confirmation: 'Manual' },
+        { id: '3', name: 'C', duration: 30, modality: 'Virtual', confirmation: 'Manual' },
+        { id: '4', name: 'D', duration: 60, modality: 'Presencial', confirmation: 'Automática' }
+      ];
+
+      const result = EventService.sortEventTypesByDuration(duplicateDurationEvents, 'asc');
+
+      expect(result).toHaveLength(4);
+      expect(result.map(e => e.duration)).toEqual([30, 30, 60, 60]);
+    });
+
+    test('Retornar array vacío al ordenar una colección vacía sin errores', () => {
+      const ascResult = EventService.sortEventTypesByDuration([], 'asc');
+      const descResult = EventService.sortEventTypesByDuration([], 'desc');
+
+      expect(ascResult).toEqual([]);
+      expect(descResult).toEqual([]);
+    });
+
+    test('Filtrar eventos exclusivamente por modalidad Presencial', () => {
+      const result = EventService.filterEventTypesByModality(unsortedEvents, 'Presencial');
+
+      expect(result).toHaveLength(2);
+      expect(result.every(e => e.modality === 'Presencial')).toBe(true);
+      expect(result.map(e => e.name)).toEqual(['Sesión Larga', 'Taller Estándar']);
+    });
+
+    test('Retornar array vacío si no existen eventos de la modalidad solicitada', () => {
+      const onlyVirtualEvents: EventType[] = [
+        { id: '1', name: 'Virtual 1', duration: 30, modality: 'Virtual', confirmation: 'Automática' },
+        { id: '2', name: 'Virtual 2', duration: 45, modality: 'Virtual', confirmation: 'Manual' }
+      ];
+
+      const result = EventService.filterEventTypesByModality(onlyVirtualEvents, 'Presencial');
+
+      expect(result).toHaveLength(0);
+      expect(result).toEqual([]);
+    });
+  });
 });
