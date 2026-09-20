@@ -98,6 +98,40 @@ describe('Módulo 04 - Proceso de Reserva', () => {
       expect(result.error).toBe('Slot is no longer available');
     });
 
+    test('Preservar íntegramente los campos opcionales del invitado en el resumen de reserva', () => {
+      const event = { id: '1', name: 'Consulta', duration: 60, modality: 'Presencial' as const, confirmation: 'Automática' as const };
+      const guest = {
+        name: 'Juan Perez',
+        email: 'juan@example.com',
+        phone: '+541112345678',
+        note: 'Solicita reunión puntual'
+      };
+
+      const result = BookingService.generateBookingSummary(event, '2026-06-20', '09:00', guest);
+
+      expect(result.booking.guest.phone).toBe('+541112345678');
+      expect(result.booking.guest.note).toBe('Solicita reunión puntual');
+    });
+
+    test('Rechazar segunda confirmación consecutiva sobre el mismo turno por idempotencia', () => {
+      const availableSlots = ['09:00', '10:00'];
+      const booking = {
+        eventId: '1',
+        date: '2026-06-20',
+        time: '09:00',
+        guest: { name: 'Juan Perez', email: 'juan@example.com' },
+        status: 'Pendiente' as const
+      };
+
+      // Primera llamada: confirma exitosamente
+      const firstAttempt = BookingService.confirmBooking(booking, availableSlots);
+      expect(firstAttempt.success).toBe(true);
+
+      // Segunda llamada consecutiva sobre el mismo turno: debe ser rechazada
+      const secondAttempt = BookingService.confirmBooking(booking, availableSlots);
+      expect(secondAttempt.success).toBe(false);
+      expect(secondAttempt.error).toBe('Slot is no longer available');
+    });
 });
 
 });
