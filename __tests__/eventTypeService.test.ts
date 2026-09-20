@@ -195,5 +195,20 @@ describe('Visualización y Filtros', () => {
       'Reunión de Seguimiento'
     ]);
   });
+
+  test('Retornar todos los eventos si el término de búsqueda está vacío o contiene solo espacios', () => {
+    const emptyResult = EventService.filterEventTypesByName(mockEvents, '');
+    const spacesResult = EventService.filterEventTypesByName(mockEvents, '   ');
+
+    expect(emptyResult).toHaveLength(mockEvents.length);
+    expect(spacesResult).toHaveLength(mockEvents.length);
+  });
+
+  test('Retornar un array vacío si no hay coincidencias con el término de búsqueda', () => {
+    const result = EventService.filterEventTypesByName(mockEvents, 'termino-sin-coincidencia-xyz');
+
+    expect(result).toHaveLength(0);
+    expect(result).toEqual([]);
+  });
 });
 });
