@@ -129,6 +129,23 @@ describe('Módulo 03 - Tipos de Evento', () => {
       const currentEvent = DB.eventsStore.find(e => e.id === '1');
       expect(currentEvent).toEqual(originalEvent);
     });
+
+    test('Rechazar actualización si el ID no existe en el store', () => {
+      const result = EventService.updateEventType('9999', { name: 'Inexistente' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('El ID ingresado no existe.');
+    });
+
+    test('Actualizar parcialmente la descripción sin modificar nombre, duración ni modalidad', () => {
+      const result = EventService.updateEventType('1', { description: 'Nueva descripción detallada' });
+
+      expect(result.success).toBe(true);
+      expect(result.event?.description).toBe('Nueva descripción detallada');
+      expect(result.event?.name).toBe('Consulta Inicial');
+      expect(result.event?.duration).toBe(30);
+      expect(result.event?.modality).toBe('Virtual');
+    });
   });
 
   describe('Eliminación de tipos de evento', () => {
