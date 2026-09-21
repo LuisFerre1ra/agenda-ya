@@ -134,6 +134,23 @@ export default function Step2DateSelection({ eventDuration, onNext }: Step2Props
 
   const getDayStatus = (day: number) => {
     if (isPastDay(day)) return 'unavailable';
+
+    const selectedDate = new Date(currentYear, currentMonth - 1, day);
+    const isToday = selectedDate.toDateString() === today.toDateString();
+    if (isToday) {
+      const dateString = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+      const slots = getTimeSlotsForDate(dateString, eventDuration);
+      const now = new Date();
+      const hasAnyFutureSlot = slots.some((slot) => {
+        if (!slot.available) return false;
+        const [, endTime] = slot.time.split(' - ').map((t) => t.trim());
+        const [endHour, endMinute] = endTime.split(':').map(Number);
+        const slotEnd = new Date(currentYear, currentMonth - 1, day, endHour, endMinute);
+        return slotEnd > now;
+      });
+      if (!hasAnyFutureSlot) return 'full';
+    }
+
     if (availability.fullDays.includes(day)) return 'full';
     if (availability.unavailableDays.includes(day)) return 'unavailable';
     return 'available';
