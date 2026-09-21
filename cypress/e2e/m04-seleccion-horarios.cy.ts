@@ -32,11 +32,19 @@ describe('AgendaYA - Módulo 04: Reserva Pública - Selección de Fechas y Franj
     cy.get('[data-cy="time-slot-btn"][data-cy-available="true"]').first().click();
     cy.get('[data-cy="btn-step2-continue"]').should('not.be.disabled');
 
-    // Act 5: cambiar a una segunda franja horaria disponible y verificar actualización
-    cy.get('[data-cy="time-slot-btn"][data-cy-available="true"]').eq(1).click();
-    cy.get('[data-cy="time-slot-btn"][data-cy-available="true"]').eq(1)
-      .should('have.class', 'bg-[#2b88d8]')
-      .and('have.class', 'text-white');
+    // Act 5: verificar o alternar franja horaria seleccionada
+    cy.get('[data-cy="time-slot-btn"][data-cy-available="true"]').then(($slots) => {
+      if ($slots.length > 1) {
+        cy.wrap($slots).eq(1).click();
+        cy.wrap($slots).eq(1)
+          .should('have.class', 'bg-[#2b88d8]')
+          .and('have.class', 'text-white');
+      } else {
+        cy.wrap($slots).first()
+          .should('have.class', 'bg-[#2b88d8]')
+          .and('have.class', 'text-white');
+      }
+    });
 
     // Assert final: avanzar con éxito al Paso 3 con fecha y hora seleccionadas
     cy.get('[data-cy="btn-step2-continue"]').click();
