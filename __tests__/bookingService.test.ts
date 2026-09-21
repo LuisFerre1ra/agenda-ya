@@ -88,6 +88,25 @@ describe('Módulo 04 - Proceso de Reserva', () => {
       expect(result.guest?.phone).toBe(payload.phone);
       expect(result.guest?.note).toBe(payload.note);
     });
+
+    test('Rechazar procesamiento si se envía un payload vacío sin datos requeridos', () => {
+      const payload = {};
+      const result = BookingService.processGuestForm(payload);
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toBeDefined();
+      expect(result.errors).toContain('Name is required');
+      expect(result.errors).toContain('Email is required');
+    });
+
+    test('Rechazar formulario si el nombre contiene exclusivamente espacios en blanco o tabulaciones', () => {
+      const payload = { name: '   \t  ', email: 'valido@example.com' };
+      const result = BookingService.processGuestForm(payload);
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toBeDefined();
+      expect(result.errors).toContain('Name is required');
+    });
   });
 
   describe('Confirmación de la reserva', () => {
