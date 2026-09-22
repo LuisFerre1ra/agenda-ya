@@ -58,6 +58,37 @@ describe('Módulo 03 - Tipos de Evento', () => {
       expect(result.error).toBe('La duración debe ser mayor a 0.');
       expect(DB.eventsStore.length).toBe(0);
     });
+
+    test('Crear evento con duración mínima admisible (1 minuto)', () => {
+      const data = {
+        name: 'Consulta Express',
+        duration: 1,
+        modality: 'Virtual' as const,
+        confirmation: 'Automática' as const
+      };
+
+      const result = EventService.createEventType(data);
+
+      expect(result.success).toBe(true);
+      expect(result.event).toBeDefined();
+      expect(result.event?.duration).toBe(1);
+      expect(DB.eventsStore[0].duration).toBe(1);
+    });
+
+    test('Rechazar creación si el nombre contiene solo tabulaciones y saltos de línea', () => {
+      const data = {
+        name: '\t \n  ',
+        duration: 30,
+        modality: 'Presencial' as const,
+        confirmation: 'Manual' as const
+      };
+
+      const result = EventService.createEventType(data);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('El nombre no puede estar vacío.');
+      expect(DB.eventsStore.length).toBe(0);
+    });
   });
 
   describe('Edición de tipos de evento', () => {
@@ -97,6 +128,23 @@ describe('Módulo 03 - Tipos de Evento', () => {
       
       const currentEvent = DB.eventsStore.find(e => e.id === '1');
       expect(currentEvent).toEqual(originalEvent);
+    });
+
+    test('Rechazar actualización si el ID no existe en el store', () => {
+      const result = EventService.updateEventType('9999', { name: 'Inexistente' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('El ID ingresado no existe.');
+    });
+
+    test('Actualizar parcialmente la descripción sin modificar nombre, duración ni modalidad', () => {
+      const result = EventService.updateEventType('1', { description: 'Nueva descripción detallada' });
+
+      expect(result.success).toBe(true);
+      expect(result.event?.description).toBe('Nueva descripción detallada');
+      expect(result.event?.name).toBe('Consulta Inicial');
+      expect(result.event?.duration).toBe(30);
+      expect(result.event?.modality).toBe('Virtual');
     });
   });
 
@@ -157,6 +205,31 @@ describe('Módulo 03 - Tipos de Evento', () => {
       // Verificamos que no se haya borrado nada por accidente
       expect(DB.eventsStore.length).toBe(2);
     });
+
+    test('Manejar error al intentar restaurar cuando la papelera está vacía', () => {
+      // Aseguramos papelera limpia
+      DB.setLastDeletedEvent(null);
+
+      const restoreResult = EventService.restoreEventType();
+
+      expect(restoreResult.success).toBe(false);
+      expect(restoreResult.error).toBe('No hay eventos eliminados recientemente para deshacer.');
+    });
+
+    test('Rechazar una segunda llamada consecutiva a deshacer por papelera ya vaciada', () => {
+      // Eliminamos el evento '1'
+      EventService.deleteEventType('1');
+
+      // Primer deshacer: exitoso
+      const firstRestore = EventService.restoreEventType();
+      expect(firstRestore.success).toBe(true);
+      expect(firstRestore.event?.id).toBe('1');
+
+      // Segundo deshacer consecutivo: debe fallar
+      const secondRestore = EventService.restoreEventType();
+      expect(secondRestore.success).toBe(false);
+      expect(secondRestore.error).toBe('No hay eventos eliminados recientemente para deshacer.');
+    });
   });
 
 describe('Visualización y Filtros', () => {
@@ -195,5 +268,77 @@ describe('Visualización y Filtros', () => {
       'Reunión de Seguimiento'
     ]);
   });
+
+  test('Retornar todos los eventos si el término de búsqueda está vacío o contiene solo espacios', () => {
+    const emptyResult = EventService.filterEventTypesByName(mockEvents, '');
+    const spacesResult = EventService.filterEventTypesByName(mockEvents, '   ');
+
+    expect(emptyResult).toHaveLength(mockEvents.length);
+    expect(spacesResult).toHaveLength(mockEvents.length);
+  });
+
+  test('Retornar un array vacío si no hay coincidencias con el término de búsqueda', () => {
+    const result = EventService.filterEventTypesByName(mockEvents, 'termino-sin-coincidencia-xyz');
+
+    expect(result).toHaveLength(0);
+    expect(result).toEqual([]);
+  });
 });
+
+  describe('Ordenamiento Algorítmico y Filtrado por Modalidad', () => {
+    const unsortedEvents: EventType[] = [
+      { id: '1', name: 'Sesión Larga', duration: 120, modality: 'Presencial', confirmation: 'Automática' },
+      { id: '2', name: 'Reunión Breve', duration: 15, modality: 'Virtual', confirmation: 'Manual' },
+      { id: '3', name: 'Taller Estándar', duration: 60, modality: 'Presencial', confirmation: 'Automática' },
+      { id: '4', name: 'Consulta Corta', duration: 30, modality: 'Virtual', confirmation: 'Manual' }
+    ];
+
+    test('Ordenar eventos en sentido ascendente estricto por duración', () => {
+      const result = EventService.sortEventTypesByDuration(unsortedEvents, 'asc');
+
+      expect(result.map(e => e.duration)).toEqual([15, 30, 60, 120]);
+    });
+
+    test('Preservar estabilidad ante eventos con duraciones idénticas', () => {
+      const duplicateDurationEvents: EventType[] = [
+        { id: '1', name: 'A', duration: 30, modality: 'Virtual', confirmation: 'Automática' },
+        { id: '2', name: 'B', duration: 60, modality: 'Presencial', confirmation: 'Manual' },
+        { id: '3', name: 'C', duration: 30, modality: 'Virtual', confirmation: 'Manual' },
+        { id: '4', name: 'D', duration: 60, modality: 'Presencial', confirmation: 'Automática' }
+      ];
+
+      const result = EventService.sortEventTypesByDuration(duplicateDurationEvents, 'asc');
+
+      expect(result).toHaveLength(4);
+      expect(result.map(e => e.duration)).toEqual([30, 30, 60, 60]);
+    });
+
+    test('Retornar array vacío al ordenar una colección vacía sin errores', () => {
+      const ascResult = EventService.sortEventTypesByDuration([], 'asc');
+      const descResult = EventService.sortEventTypesByDuration([], 'desc');
+
+      expect(ascResult).toEqual([]);
+      expect(descResult).toEqual([]);
+    });
+
+    test('Filtrar eventos exclusivamente por modalidad Presencial', () => {
+      const result = EventService.filterEventTypesByModality(unsortedEvents, 'Presencial');
+
+      expect(result).toHaveLength(2);
+      expect(result.every(e => e.modality === 'Presencial')).toBe(true);
+      expect(result.map(e => e.name)).toEqual(['Sesión Larga', 'Taller Estándar']);
+    });
+
+    test('Retornar array vacío si no existen eventos de la modalidad solicitada', () => {
+      const onlyVirtualEvents: EventType[] = [
+        { id: '1', name: 'Virtual 1', duration: 30, modality: 'Virtual', confirmation: 'Automática' },
+        { id: '2', name: 'Virtual 2', duration: 45, modality: 'Virtual', confirmation: 'Manual' }
+      ];
+
+      const result = EventService.filterEventTypesByModality(onlyVirtualEvents, 'Presencial');
+
+      expect(result).toHaveLength(0);
+      expect(result).toEqual([]);
+    });
+  });
 });

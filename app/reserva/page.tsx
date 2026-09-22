@@ -68,14 +68,16 @@ export default function ReservaPage() {
   return (
     <div className="min-h-screen bg-[#94a3b8] flex justify-center sm:py-8">
       {/* Contenedor del celular */}
-      <div className="w-full max-w-md bg-white sm:rounded-[2.5rem] shadow-2xl relative flex flex-col min-h-screen sm:min-h-[800px] overflow-hidden">
+      <div data-cy="mobile-booking-container" className="w-full max-w-md bg-white sm:rounded-[2.5rem] shadow-2xl relative flex flex-col min-h-screen sm:min-h-[800px] overflow-hidden">
         {/* Renderizado Condicional: Mostrar estructura normal (Pasos 1-4) o Pantalla de Éxito (Paso 5) */}
         {currentStep < 5 ? (
           <>
             {/* Cabecera superior con botón de volver */}
-            <div className="bg-[#e2e8f0] h-24 w-full relative">
+            <div data-cy="booking-header" className="bg-[#e2e8f0] h-24 w-full relative">
               {currentStep > 1 && (
                 <button
+                  type="button"
+                  data-cy="btn-booking-back"
                   onClick={handleBack}
                   className="absolute top-6 left-6 text-slate-500 hover:text-slate-700 cursor-pointer p-1"
                 >
@@ -85,20 +87,21 @@ export default function ReservaPage() {
             </div>
 
             {/* Avatar flotante */}
-            <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-[#cbd5e1] text-gray-500 rounded-full w-16 h-16 flex items-center justify-center border-[6px] border-white z-10">
+            <div data-cy="booking-avatar" className="absolute top-16 left-1/2 -translate-x-1/2 bg-[#cbd5e1] text-gray-500 rounded-full w-16 h-16 flex items-center justify-center border-[6px] border-white z-10">
               <User size={32} />
             </div>
 
             {/* Contenido principal */}
             <main className="flex-1 px-6 pt-12 pb-8 flex flex-col h-full">
-              <h1 className="text-xl font-bold text-slate-800 text-center mb-6">
+              <h1 data-cy="booking-profile-name" className="text-xl font-bold text-slate-800 text-center mb-6">
                 Agenda de Mateo Aciar
               </h1>
 
               {/* Barra de progreso global */}
-              <div className="mb-4">
+              <div data-cy="booking-progress-container" className="mb-4">
                 <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
+                    data-cy="booking-progress-bar"
                     className="h-full bg-slate-700 rounded-full transition-all duration-300"
                     style={{ width: progressWidth }}
                   ></div>

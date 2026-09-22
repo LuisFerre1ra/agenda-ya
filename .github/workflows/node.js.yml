@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - name: Checkout del código
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Configurar Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
@@ -34,3 +34,18 @@ jobs:
 
     - name: Construir proyecto (Build)
       run: npm run build
+
+    - name: Pruebas End-to-End (Cypress)
+      uses: cypress-io/github-action@v6
+      with:
+        install: false
+        start: npm start
+        wait-on: 'http://localhost:3000'
+
+    - name: Subir capturas en caso de fallos de Cypress
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: cypress-screenshots
+        path: cypress/screenshots
+        if-no-files-found: ignore

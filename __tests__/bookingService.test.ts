@@ -35,6 +35,25 @@ describe('Módulo 04 - Proceso de Reserva', () => {
       expect(available).not.toContain('08:30');
       expect(available).toEqual(['08:00', '09:00']);
     });
+
+    test('Retornar array vacío de forma segura ante fecha o lista de slots inválidos o nulos', () => {
+      const nullDateResult = BookingService.getAvailableSlots(null as unknown as Date, ['09:00'], []);
+      const nullSlotsResult = BookingService.getAvailableSlots(new Date(), null as unknown as string[], []);
+
+      expect(nullDateResult).toEqual([]);
+      expect(nullSlotsResult).toEqual([]);
+    });
+
+    test('Retornar todos los horarios disponibles cuando no hay turnos ocupados', () => {
+      const allSlots = ['09:00', '10:00', '11:00'];
+      const occupied: string[] = [];
+      const today = new Date();
+
+      const available = BookingService.getAvailableSlots(today, allSlots, occupied);
+
+      expect(available).toHaveLength(3);
+      expect(available).toEqual(allSlots);
+    });
   });
 
   describe('Ingreso de datos del invitado', () => {
@@ -69,6 +88,25 @@ describe('Módulo 04 - Proceso de Reserva', () => {
       expect(result.guest?.phone).toBe(payload.phone);
       expect(result.guest?.note).toBe(payload.note);
     });
+
+    test('Rechazar procesamiento si se envía un payload vacío sin datos requeridos', () => {
+      const payload = {};
+      const result = BookingService.processGuestForm(payload);
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toBeDefined();
+      expect(result.errors).toContain('Name is required');
+      expect(result.errors).toContain('Email is required');
+    });
+
+    test('Rechazar formulario si el nombre contiene exclusivamente espacios en blanco o tabulaciones', () => {
+      const payload = { name: '   \t  ', email: 'valido@example.com' };
+      const result = BookingService.processGuestForm(payload);
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toBeDefined();
+      expect(result.errors).toContain('Name is required');
+    });
   });
 
   describe('Confirmación de la reserva', () => {
@@ -98,6 +136,40 @@ describe('Módulo 04 - Proceso de Reserva', () => {
       expect(result.error).toBe('Slot is no longer available');
     });
 
+    test('Preservar íntegramente los campos opcionales del invitado en el resumen de reserva', () => {
+      const event = { id: '1', name: 'Consulta', duration: 60, modality: 'Presencial' as const, confirmation: 'Automática' as const };
+      const guest = {
+        name: 'Juan Perez',
+        email: 'juan@example.com',
+        phone: '+541112345678',
+        note: 'Solicita reunión puntual'
+      };
+
+      const result = BookingService.generateBookingSummary(event, '2026-06-20', '09:00', guest);
+
+      expect(result.booking.guest.phone).toBe('+541112345678');
+      expect(result.booking.guest.note).toBe('Solicita reunión puntual');
+    });
+
+    test('Rechazar segunda confirmación consecutiva sobre el mismo turno por idempotencia', () => {
+      const availableSlots = ['09:00', '10:00'];
+      const booking = {
+        eventId: '1',
+        date: '2026-06-20',
+        time: '09:00',
+        guest: { name: 'Juan Perez', email: 'juan@example.com' },
+        status: 'Pendiente' as const
+      };
+
+      // Primera llamada: confirma exitosamente
+      const firstAttempt = BookingService.confirmBooking(booking, availableSlots);
+      expect(firstAttempt.success).toBe(true);
+
+      // Segunda llamada consecutiva sobre el mismo turno: debe ser rechazada
+      const secondAttempt = BookingService.confirmBooking(booking, availableSlots);
+      expect(secondAttempt.success).toBe(false);
+      expect(secondAttempt.error).toBe('Slot is no longer available');
+    });
 });
 
 });

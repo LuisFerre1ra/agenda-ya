@@ -134,6 +134,23 @@ export default function Step2DateSelection({ eventDuration, onNext }: Step2Props
 
   const getDayStatus = (day: number) => {
     if (isPastDay(day)) return 'unavailable';
+
+    const selectedDate = new Date(currentYear, currentMonth - 1, day);
+    const isToday = selectedDate.toDateString() === today.toDateString();
+    if (isToday) {
+      const dateString = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+      const slots = getTimeSlotsForDate(dateString, eventDuration);
+      const now = new Date();
+      const hasAnyFutureSlot = slots.some((slot) => {
+        if (!slot.available) return false;
+        const [, endTime] = slot.time.split(' - ').map((t) => t.trim());
+        const [endHour, endMinute] = endTime.split(':').map(Number);
+        const slotEnd = new Date(currentYear, currentMonth - 1, day, endHour, endMinute);
+        return slotEnd > now;
+      });
+      if (!hasAnyFutureSlot) return 'full';
+    }
+
     if (availability.fullDays.includes(day)) return 'full';
     if (availability.unavailableDays.includes(day)) return 'unavailable';
     return 'available';
@@ -141,32 +158,39 @@ export default function Step2DateSelection({ eventDuration, onNext }: Step2Props
 
   return (
     <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-      <h2 className="text-center text-slate-700 mb-6 font-medium">
+      <h2 data-cy="step2-title" className="text-center text-slate-700 mb-6 font-medium">
         Paso 2 de 4: Seleccionar Fecha y Hora
       </h2>
 
       {/* Control del Mes Dinámico */}
-      <div className="flex justify-between items-center mb-4 px-2 text-slate-700">
+      <div data-cy="month-controls" className="flex justify-between items-center mb-4 px-2 text-slate-700">
         <button
+          type="button"
+          data-cy="btn-prev-month"
           onClick={handlePrevMonth}
           disabled={isPrevMonthDisabled}
           className={`p-1 rounded transition-colors ${isPrevMonthDisabled ? 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-70' : 'text-slate-700 hover:bg-slate-100 cursor-pointer'}`}
         >
           <ChevronLeft size={20} />
         </button>
-        <span className="font-bold text-lg">{displayTitle}</span>
-        <button onClick={handleNextMonth} className="p-1 hover:bg-slate-100 rounded cursor-pointer transition-colors text-slate-700">
+        <span data-cy="text-current-month" className="font-bold text-lg">{displayTitle}</span>
+        <button 
+          type="button"
+          data-cy="btn-next-month"
+          onClick={handleNextMonth} 
+          className="p-1 hover:bg-slate-100 rounded cursor-pointer transition-colors text-slate-700"
+        >
           <ChevronRight size={20} />
         </button>
       </div>
 
       {/* Calendario */}
-      <div className="mb-6">
+      <div data-cy="calendar-container" className="mb-6">
         <div className="grid grid-cols-7 gap-1 mb-2 text-center text-sm font-medium text-slate-600">
           <div>LU</div><div>MA</div><div>MI</div><div>JU</div><div>VI</div><div>SA</div><div>DO</div>
         </div>
         
-        <div className="grid grid-cols-7 gap-0 border-t border-l border-gray-200">
+        <div data-cy="calendar-grid" className="grid grid-cols-7 gap-0 border-t border-l border-gray-200">
           {blanks.map((_, i) => (
             <div key={`blank-${i}`} className="border-b border-r border-gray-200 h-10"></div>
           ))}
@@ -189,6 +213,9 @@ export default function Step2DateSelection({ eventDuration, onNext }: Step2Props
             return (
               <div 
                 key={day}
+                data-cy="calendar-day"
+                data-cy-day={day}
+                data-cy-status={status}
                 onClick={() => handleDayClick(day, status)}
                 className={`h-10 border-b border-r border-gray-200 flex items-center justify-center text-sm ${cellTransitionClass} ${bgClass}`}
               >
@@ -205,7 +232,7 @@ export default function Step2DateSelection({ eventDuration, onNext }: Step2Props
 
       {/* Horarios Disponibles */}
       {selectedDay && (
-        <div className="mb-6 flex-1">
+        <div data-cy="time-slots-container" className="mb-6 flex-1">
           <div className="grid grid-cols-2 gap-3">
             {timeSlots.map((slot) => {
               const isSelected = selectedTime === slot.time;
@@ -213,6 +240,10 @@ export default function Step2DateSelection({ eventDuration, onNext }: Step2Props
               return (
                 <button
                   key={slot.id}
+                  type="button"
+                  data-cy="time-slot-btn"
+                  data-cy-time={slot.time}
+                  data-cy-available={slot.available}
                   onClick={() => { if(slot.available) setSelectedTime(slot.time) }}
                   disabled={!slot.available}
                   className={`py-2 px-2 rounded border text-sm font-medium ${cellTransitionClass} ${
@@ -233,6 +264,8 @@ export default function Step2DateSelection({ eventDuration, onNext }: Step2Props
 
       {/* Botón Continuar */}
       <button 
+        type="button"
+        data-cy="btn-step2-continue"
         onClick={() => {
           if (selectedDay && selectedTime) {
             const formattedDate = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${selectedDay.toString().padStart(2, '0')}`;

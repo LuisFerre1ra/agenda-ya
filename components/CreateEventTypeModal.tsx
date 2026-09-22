@@ -78,24 +78,26 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
       {/* Fondo oscuro transparente */}
       <div className="fixed inset-0 bg-slate-800/60 z-40 flex items-center justify-center">
         {/* Contenedor del Pop-up */}
-        <div className="bg-white rounded-lg shadow-xl w-[600px] relative p-6">
+        <div data-cy="modal-event-type" className="bg-white rounded-lg shadow-xl w-[600px] relative p-6">
           
           {/* Botón Cerrar (X) */}
           <button 
             type="button"
+            data-cy="btn-modal-close"
             onClick={() => onClose(false)}
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer p-1"
           >
             <X size={24} />
           </button>
 
-          <form onSubmit={handleSubmit} className="space-y-6 mt-2">
+          <form data-cy="form-event-type" onSubmit={handleSubmit} className="space-y-6 mt-2">
             
             {/* Nombre del Evento */}
             <div>
               <label className="block text-lg font-bold text-gray-800 mb-2">Nombre del evento</label>
               <input 
                 type="text" 
+                data-cy="input-event-name"
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
@@ -110,7 +112,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
               />
               {/* Mensaje de error condicional */}
               {isTouched && isNameEmpty && (
-                <p className="text-red-500 text-sm mt-1">El campo no puede estar vacío.</p>
+                <p data-cy="error-event-name" className="text-red-500 text-sm mt-1">El campo no puede estar vacío.</p>
               )}
             </div>
 
@@ -123,12 +125,14 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
                 <div className="flex gap-2">
                   <input 
                     type="number" 
+                    data-cy="input-event-duration"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     className="w-16 border border-gray-300 rounded px-2 py-1 text-center text-gray-800 focus:outline-none focus:border-blue-500"
                     min="1"
                   />
                   <select 
+                    data-cy="select-duration-unit"
                     value={durationUnit}
                     onChange={(e) => setDurationUnit(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-gray-800 focus:outline-none focus:border-blue-500 bg-white"
@@ -147,6 +151,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
                     <input 
                       type="radio" 
                       name="modality" 
+                      data-cy="radio-modality-presencial"
                       value="Presencial"
                       checked={modality === 'Presencial'}
                       onChange={(e) => setModality(e.target.value as EventType['modality'])}
@@ -158,6 +163,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
                     <input 
                       type="radio" 
                       name="modality" 
+                      data-cy="radio-modality-virtual"
                       value="Virtual"
                       checked={modality === 'Virtual'}
                       onChange={(e) => setModality(e.target.value as EventType['modality'])}
@@ -176,6 +182,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
                     <input 
                       type="radio" 
                       name="confirmation" 
+                      data-cy="radio-confirmation-automatica"
                       value="Automática"
                       checked={confirmation === 'Automática'}
                       onChange={(e) => setConfirmation(e.target.value as EventType['confirmation'])}
@@ -187,6 +194,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
                     <input 
                       type="radio" 
                       name="confirmation" 
+                      data-cy="radio-confirmation-manual"
                       value="Manual"
                       checked={confirmation === 'Manual'}
                       onChange={(e) => setConfirmation(e.target.value as EventType['confirmation'])}
@@ -203,6 +211,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
               <label className="block text-lg font-bold text-gray-800 mb-2">Descripción (Opcional)</label>
               <textarea 
                 rows={4}
+                data-cy="textarea-event-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Breve reunión para conocer necesidades."
@@ -211,7 +220,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
             </div>
 
             {errorMessage && (
-              <div className="rounded bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
+              <div data-cy="form-error-message" className="rounded bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
                 {errorMessage}
               </div>
             )}
@@ -220,6 +229,7 @@ export default function CreateEventTypeModal({ isOpen, eventToEdit = null, onClo
             <div className="flex justify-end">
               <button 
                 type="submit"
+                data-cy="btn-save-event"
                 disabled={(isTouched && !isFormValid) || isSaving}
                 className={`px-6 py-2 rounded text-white font-medium transition-colors ${
                   (isTouched && !isFormValid) || isSaving

@@ -34,8 +34,8 @@ export default function Step3GuestData({ onNext }: Step3Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-      <h2 className="text-center text-slate-700 mb-6 font-medium">
+    <form data-cy="guest-data-form" onSubmit={handleSubmit} className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
+      <h2 data-cy="step3-title" className="text-center text-slate-700 mb-6 font-medium">
         Paso 3 de 4: Ingresar Datos Personales
       </h2>
 
@@ -47,6 +47,7 @@ export default function Step3GuestData({ onNext }: Step3Props) {
           <label className="block font-bold text-slate-800 mb-1">Nombre Completo</label>
           <input
             type="text"
+            data-cy="input-guest-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={() => setIsTouched(true)}
@@ -58,7 +59,7 @@ export default function Step3GuestData({ onNext }: Step3Props) {
             }`}
           />
           {isTouched && !isNameValid && (
-            <p className="text-red-500 text-xs mt-1">El nombre es obligatorio.</p>
+            <p data-cy="error-guest-name" className="text-red-500 text-xs mt-1">El nombre es obligatorio.</p>
           )}
         </div>
 
@@ -67,6 +68,7 @@ export default function Step3GuestData({ onNext }: Step3Props) {
           <label className="block font-bold text-slate-800 mb-1">Correo Electrónico</label>
           <input
             type="email"
+            data-cy="input-guest-email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onBlur={() => setIsTouched(true)}
@@ -78,7 +80,7 @@ export default function Step3GuestData({ onNext }: Step3Props) {
             }`}
           />
           {isTouched && !isEmailValid && (
-            <p className="text-red-500 text-xs mt-1">Ingrese un correo válido.</p>
+            <p data-cy="error-guest-email" className="text-red-500 text-xs mt-1">Ingrese un correo válido.</p>
           )}
         </div>
 
@@ -87,6 +89,7 @@ export default function Step3GuestData({ onNext }: Step3Props) {
           <label className="block font-bold text-slate-800 mb-1">Teléfono (Opcional)</label>
           <input
             type="tel"
+            data-cy="input-guest-phone"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="261-4123456"
@@ -99,6 +102,7 @@ export default function Step3GuestData({ onNext }: Step3Props) {
           <label className="block font-bold text-slate-800 mb-1">Nota (Opcional)</label>
           <textarea
             rows={4}
+            data-cy="textarea-guest-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full border border-gray-300 rounded px-3 py-2 text-slate-800 resize-none focus:outline-none focus:ring-1 focus:ring-[#2b88d8] focus:border-[#2b88d8]"
@@ -109,6 +113,7 @@ export default function Step3GuestData({ onNext }: Step3Props) {
       {/* Botón Continuar */}
       <button
         type="submit"
+        data-cy="btn-step3-continue"
         className={`w-full py-3.5 rounded text-white font-medium text-lg transition-colors mt-auto ${
           !isFormValid && isTouched
             ? 'bg-gray-400 cursor-not-allowed'
