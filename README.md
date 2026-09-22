@@ -163,7 +163,10 @@ flowchart TD
         H -->|Pasa| I{7. Build 'npm run build'}
         
         I -->|Falla| ERROR
-        I -->|Pasa| SUCCESS[Permite el Merge]
+        I -->|Pasa| J{8. Pruebas E2E 'Cypress'}
+        
+        J -->|Falla| ERROR
+        J -->|Pasa| SUCCESS[Permite el Merge]
 
         style ERROR fill:#ffcccc,stroke:#cc0000,stroke-width:2px,color:#900
         style SUCCESS fill:#ccffcc,stroke:#009900,stroke-width:2px,color:#060
