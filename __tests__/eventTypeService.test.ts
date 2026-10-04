@@ -93,8 +93,8 @@ describe('Módulo 03 - Tipos de Evento', () => {
 
   describe('Edición de tipos de evento', () => {
     const mockEvents: EventType[] = [
-      { id: '1', name: 'Consulta Inicial', duration: 30, modality: 'Virtual', confirmation: 'Automática' },
-      { id: '2', name: 'Reunión de Seguimiento', duration: 60, modality: 'Presencial', confirmation: 'Manual' }
+      { id: '1', name: 'Consulta Inicial', duration: 30, modality: 'Virtual', confirmation: 'Automática', description: '' },
+      { id: '2', name: 'Reunión de Seguimiento', duration: 60, modality: 'Presencial', confirmation: 'Manual', description: '' }
     ];
 
     beforeEach(() => {
