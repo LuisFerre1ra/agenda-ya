@@ -36,7 +36,11 @@ export function updateEventType(id: string, data: Partial<EventType>): { success
     }
   }
 
-  const updatedEvent = { ...eventsStore[index], ...data };
+  const updatedEvent = {
+    ...eventsStore[index],
+    ...data,
+    description: data.description || '',
+  };
   eventsStore[index] = updatedEvent;
 
   return { success: true, event: updatedEvent };
