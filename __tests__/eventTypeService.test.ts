@@ -146,6 +146,24 @@ describe('Módulo 03 - Tipos de Evento', () => {
       expect(result.event?.duration).toBe(30);
       expect(result.event?.modality).toBe('Virtual');
     });
+
+    test('Preservar la descripción existente al editar solo la duración o confirmación (INC-0305)', () => {
+      DB.resetEventsStore([
+        {
+          id: '1',
+          name: 'Consulta Inicial',
+          duration: 30,
+          modality: 'Virtual',
+          confirmation: 'Automática',
+          description: 'Breve reunión para conocer necesidades del cliente.'
+        }
+      ]);
+
+      const result = EventService.updateEventType('1', { duration: 45 });
+
+      expect(result.success).toBe(true);
+      expect(result.event?.description).toBe('Breve reunión para conocer necesidades del cliente.');
+    });
   });
 
   describe('Eliminación de tipos de evento', () => {
