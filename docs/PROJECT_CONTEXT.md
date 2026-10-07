@@ -7,7 +7,8 @@
 - **Repositorio y Entregas:**
   - CI/CD (TP4): `https://github.com/LuisFerre1ra/agenda-ya/tree/entrega-tp4`
   - Casos de Prueba (TP5): `https://github.com/LuisFerre1ra/agenda-ya/tree/entrega-tp5`
-  - Testing Automatizado (TP6): `https://github.com/LuisFerre1ra/agenda-ya/tree/tp6` (Consigna en `docs/tp_actual/consigna.md`)
+  - Testing Automatizado (TP6): `https://github.com/LuisFerre1ra/agenda-ya/tree/tp6`
+  - Plan de Desarrollo y Mantenimiento / CI/CD Hotfix (TP7): `https://github.com/LuisFerre1ra/agenda-ya/tree/tp7`
   - Tableros Ágiles: `https://trello.com/b/69d907c0b02c0d9e32cddfa8` | `https://trello.com/b/6a04e130055d4cc58944c8ea`
 
 ---
@@ -46,28 +47,29 @@ AgendaYA permite a profesionales y empresas coordinar turnos y reuniones con cli
 ## 2.1 Tecnologías Centrales
 - **Lenguaje:** TypeScript (v5.x) configurado con verificación estricta (`strict: true`, prohibición absoluta del tipo `any`).
 - **Framework:** Next.js (App Router, Server y Client Components, Route Handlers).
-- **Testing Unitario:** Jest con soporte TypeScript (`ts-jest` / compilador Next.js).
-- **Testing E2E:** Cypress para verificación automatizada punta a punta sobre selectores `data-cy`.
+- **Testing Unitario:** Jest con soporte TypeScript (`ts-jest` / compilador Next.js) (41 tests unitarios).
+- **Testing E2E:** Cypress para verificación automatizada punta a punta sobre selectores `data-cy` (8 specs E2E).
 - **Testing Manual y Gestión de Calidad:** Kiwi TCMS (planes de prueba, ejecución por roles Test Lead / Tester).
-- **CI/CD:** GitHub Actions ejecutado sobre runner `ubuntu-latest`.
+- **CI/CD:** GitHub Actions ejecutado sobre runner `ubuntu-latest` con Branch Protection Rules.
 
 ## 2.2 Servicios y Capa de Datos
 La lógica de negocio reside desacoplada de la interfaz en servicios dedicados:
-- `src/services/eventTypeService.ts`: CRUD, filtrado dinámico, ordenamiento algorítmico, búsqueda reactiva y buffer de restauración (deshacer).
-- `src/services/bookingService.ts`: Cálculo de franjas horarias libres, validación de fechas pasadas, validación sintáctica de datos de contacto y reserva atómica con control de concurrencia.
-- `src/database/mockDb.ts`: Persistencia volátil en memoria para ejecución de pruebas unitarias aisladas sin dependencias de I/O externo.
+- `services/eventTypeService.ts`: CRUD, filtrado dinámico, ordenamiento algorítmico, búsqueda reactiva, buffer de restauración (deshacer) y preservación de atributos en edición parcial.
+- `services/bookingService.ts`: Cálculo de franjas horarias libres, validación de fechas pasadas, validación sintáctica de datos de contacto y reserva atómica con control de concurrencia.
+- `database/mockDb.ts`: Persistencia volátil en memoria para ejecución de pruebas unitarias aisladas sin dependencias de I/O externo.
 
-## 2.3 Pipeline de Integración Continua (GitHub Actions)
-- **Disparadores (Triggers):** `pull_request` a la rama `main` y `push` a la rama `main`.
-- **Política de Fusión:** Cero tolerancia a fallos. Cualquier paso fallido bloquea el merge.
+## 2.3 Pipeline de Integración Continua (GitHub Actions) y Protección de Ramas
+- **Disparadores (Triggers):** `pull_request` y `push` a la rama `main` y ramas de trabajo de cada TP (ej. `tp7`).
+- **Política de Fusión:** Reglas de protección de rama (*Branch Protection Rules*) en `main`. Cero tolerancia a fallos: bloquea el merge si algún check falla o falta aprobación.
 - **Etapas Secuenciales:**
-  1. *Checkout del código:* `actions/checkout`.
-  2. *Configuración de entorno:* `actions/setup-node` fijado en Node.js v20 con caché de dependencias npm.
+  1. *Checkout del código:* `actions/checkout@v4`.
+  2. *Configuración de entorno:* `actions/setup-node@v4` fijado en Node.js v20 con caché de dependencias npm.
   3. *Instalación de dependencias:* `npm ci`.
-  4. *Verificación de tipos estática:* `tsc --noEmit` (rechaza variables implícitas o tipos `any`).
-  5. *Análisis estático (Linter):* `npm run lint` (ESLint: control de variables no utilizadas, imports huérfanos, formato).
-  6. *Pruebas unitarias y cobertura:* `npm test -- --coverage` (Jest: ejecución de suites unitarias sobre servicios; cobertura mínima requerida > 70% en líneas/bloques).
+  4. *Verificación de tipos estática:* `npx tsc --noEmit` (rechaza variables implícitas o tipos `any`).
+  5. *Análisis estático (Linter):* `npm run lint` (ESLint: buenas prácticas, estilo y convenciones Next.js).
+  6. *Pruebas unitarias y cobertura:* `npm test -- --coverage` (Jest: ejecución de 41 tests unitarios sobre servicios; cobertura sobre líneas y funciones).
   7. *Compilación de producción:* `npm run build` (build productivo de Next.js sin errores de bundle).
+  8. *Pruebas End-to-End:* `cypress-io/github-action@v6` (ejecución automática de los 8 flujos E2E con servidor local levantado).
 
 ---
 

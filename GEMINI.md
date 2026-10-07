@@ -8,7 +8,8 @@
    - Toda tarea a implementar debe cumplir con los requerimientos descritos en `docs/tp_actual/consigna.md` en caso de estar presente.
 
 3. Restricciones Técnicas Estrictas:
-   - Lenguaje: TypeScript en modo estricto. Prohibido el uso de `any`.
-   - Servicios base: `src/services/eventTypeService.ts` y `src/services/bookingService.ts`.
-   - Testing: Si se introduce una función, escribí su test unitario en Jest respetando `mockDb.ts`.
-   - CI/CD: Asegurá que los cambios pasen `npm run lint` y `tsc --noEmit`.
+   - Lenguaje: TypeScript en modo estricto (`strict: true`). Prohibido el uso de `any`.
+   - Servicios base: `services/eventTypeService.ts` y `services/bookingService.ts` (almacén volátil en `database/mockDb.ts`).
+   - Ramas de trabajo: `main` representa Producción (con reglas de protección de rama / PR obligatorio). Cada trabajo práctico utiliza su propia rama de desarrollo e integración (ej. `tp6`, `tp7`, etc.).
+   - Testing: Si se introduce una función, escribir su test unitario en Jest respetando `mockDb.ts` y mantener suites E2E en Cypress.
+   - CI/CD: Asegurá que todo cambio pase el pipeline (`.github/workflows/node.js.yml`): `npm run lint`, `npx tsc --noEmit`, `npm test` y `npm run build`.
